@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "phonenumber_field",
     "apps.custom_cake",
     "apps.accounts",
 ]
@@ -97,3 +98,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGIN_URL = '/'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+PHONENUMBER_DEFAULT_REGION = "RU"
+PHONENUMBER_DEFAULT_FORMAT = "E164"

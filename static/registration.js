@@ -14,18 +14,6 @@ Vue.createApp({
         return {
             RegSchema: {
                 reg: (value) => (value ? true : 'Поле не заполнено'),
-                phone_format: (value) => {
-                    const regex = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/;
-                    if (!value) return true;
-                    if (!regex.test(value)) return '⚠ Формат телефона нарушен';
-                    return true;
-                },
-                code_format: (value) => {
-                    const regex = /^[a-zA-Z0-9]+$/;
-                    if (!value) return true;
-                    if (!regex.test(value)) return '⚠ Формат кода нарушен';
-                    return true;
-                },
             },
             Step: 'Number',
             RegInput: '',
