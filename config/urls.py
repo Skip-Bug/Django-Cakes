@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView

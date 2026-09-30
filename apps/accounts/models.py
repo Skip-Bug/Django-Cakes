@@ -10,12 +10,14 @@ class PhoneOTP(models.Model):
     is_used = models.BooleanField(default=False)
     attempts = models.PositiveSmallIntegerField(default=0)
 
+
+    def __str__(self):
+        return f"{self.phone} — {self.code}"
+
+
     def is_valid(self):
         return (
             not self.is_used
             and timezone.now() < self.expires_at
             and self.attempts < 5
         )
-
-    def __str__(self):
-        return f"{self.phone} — {self.code}"
