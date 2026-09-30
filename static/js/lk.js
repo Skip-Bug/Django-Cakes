@@ -1,4 +1,4 @@
-Vue.createApp({
+const app = Vue.createApp({
     components: {
         VForm: VeeValidate.Form,
         VField: VeeValidate.Field,
@@ -53,4 +53,7 @@ Vue.createApp({
             this.$refs.HiddenFormSubmit.click()
         }
     }
-}).mount('#LK')
+})
+
+app.config.compilerOptions.delimiters = ['[[', ']]']
+app.mount('#LK')

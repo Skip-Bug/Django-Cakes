@@ -1,4 +1,4 @@
-Vue.createApp({
+const app = Vue.createApp({
     components: {
         VForm: VeeValidate.Form,
         VField: VeeValidate.Field,
@@ -65,4 +65,8 @@ Vue.createApp({
             EnteredNumber = ''
         }
     }
-}).mount('#RegModal')
+})
+
+app.config.compilerOptions.delimiters = ['[[', ']]']
+
+app.mount('#RegModal')
