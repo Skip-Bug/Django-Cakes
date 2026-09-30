@@ -1,4 +1,4 @@
-Vue.createApp({
+const app = Vue.createApp({
     name: "App",
     components: {
         VForm: VeeValidate.Form,
@@ -145,4 +145,7 @@ Vue.createApp({
                 this.Costs.Decors[this.Decor] + W
         }
     }
-}).mount('#VueApp')
+})
+
+app.config.compilerOptions.delimiters = ['[[', ']]']
+app.mount('#VueApp')
