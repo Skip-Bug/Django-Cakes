@@ -23,7 +23,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "phonenumber_field",
     "apps.custom_cake",
+    "apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -41,7 +43,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'static'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -90,5 +92,12 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+LOGIN_URL = '/'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+PHONENUMBER_DEFAULT_REGION = "RU"
+PHONENUMBER_DEFAULT_FORMAT = "E164"
