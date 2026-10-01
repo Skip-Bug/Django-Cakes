@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = env.str("SECRET_KEY")
-
+JIVOSITE_WIDGET_ID = env.str("JIVOSITE_WIDGET_ID", "")
 
 DEBUG = True
 
@@ -50,6 +50,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.accounts.context_processors.jivosite",
             ],
         },
     },
@@ -91,12 +92,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+DEFAULT_CHARSET = "utf-8"
+FILE_CHARSET = "utf-8"
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-LOGIN_URL = '/'
+LOGIN_URL = "/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
