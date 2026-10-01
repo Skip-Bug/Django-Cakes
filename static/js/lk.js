@@ -1,4 +1,4 @@
-const app = Vue.createApp({
+const lkApp = Vue.createApp({
     components: {
         VForm: VeeValidate.Form,
         VField: VeeValidate.Field,
@@ -55,5 +55,5 @@ const app = Vue.createApp({
     }
 })
 
-app.config.compilerOptions.delimiters = ['[[', ']]']
-app.mount('#LK')
+lkApp.config.compilerOptions.delimiters = ['[[', ']]']
+lkApp.mount('#LK')
