@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "apps.custom_cake",
     "apps.accounts",
+    "apps.orders",
 ]
 
 MIDDLEWARE = [
