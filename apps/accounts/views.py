@@ -5,6 +5,7 @@ import phonenumbers
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -32,10 +33,7 @@ def normalize_phone(raw, region="RU"):
 def request_code(request):
     phone = normalize_phone(request.POST.get("phone"))
     if not phone:
-        return JsonResponse(
-            {"ok": False, "error": "Некорректный номер телефона"},
-            status=400,
-        )
+        return redirect("/?reg=code")
 
     last = (
         PhoneOTP.objects.filter(phone=phone)
@@ -43,10 +41,7 @@ def request_code(request):
         .first()
     )
     if last and (timezone.now() - last.created_at).total_seconds() < 60:
-        return JsonResponse(
-            {"ok": False, "error": "Код уже отправлен, подождите минуту"},
-            status=429,
-        )
+        return redirect("/?reg=error")
 
     code = f"{random.randint(0, 999999):06d}"
     PhoneOTP.objects.create(
@@ -59,19 +54,19 @@ def request_code(request):
     if settings.DEBUG:
         print(f"[SMS] {phone}: {code}")
 
-    return JsonResponse({"ok": True})
+    request.session["otp_phone"] = phone
+    return redirect("/?reg=code")
 
 
 @require_POST
 def verify_code(request):
-    phone = normalize_phone(request.POST.get("phone"))
+    phone = normalize_phone(
+        request.POST.get("phone") or request.session.get("otp_phone")
+    )
     code = (request.POST.get("code") or "").strip()
 
     if not phone or not code:
-        return JsonResponse(
-            {"ok": False, "error": "Нужен телефон и код"},
-            status=400,
-        )
+        return redirect("/?reg=error")
 
     otp = (
         PhoneOTP.objects.filter(phone=phone, is_used=False)
@@ -79,34 +74,31 @@ def verify_code(request):
         .first()
     )
     if not otp or not otp.is_valid():
-        return JsonResponse(
-            {"ok": False, "error": "Код истёк. Запросите новый"},
-            status=400,
-        )
+        return redirect("/?reg=error")
 
     otp.attempts += 1
     otp.save(update_fields=["attempts"])
 
     if otp.code != code:
-        return JsonResponse({"ok": False, "error": "Неверный код"}, status=400)
+        return redirect("/?reg=error")
 
     otp.is_used = True
     otp.save(update_fields=["is_used"])
 
-    user, created = User.objects.get_or_create(username=phone)
+    user, created = User.objects.get_or_create(phone=phone)
     if created:
         user.set_unusable_password()
         user.save()
 
     login(request, user)
 
-    return JsonResponse({"ok": True, "created": created})
+    return redirect("/lk/")
 
 
 @require_POST
 def logout_view(request):
     logout(request)
-    return JsonResponse({"ok": True})
+    return redirect("/")
 
 
 def check_auth(request):
@@ -116,6 +108,21 @@ def check_auth(request):
     return JsonResponse(
         {
             "authenticated": True,
-            "phone": user.username,
+            "phone": str(user.phone),
+            "name": user.name,
+            "email": user.email,
         }
     )
+
+
+@require_POST
+def update_profile(request):
+    if not request.user.is_authenticated:
+        return redirect("/")
+
+    user = request.user
+    user.name = request.POST.get("name", "").strip()
+    user.email = request.POST.get("email", "").strip()
+    user.save(update_fields=["name", "email"])
+
+    return redirect("/lk/")

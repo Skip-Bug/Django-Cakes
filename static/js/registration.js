@@ -1,4 +1,4 @@
-const app = Vue.createApp({
+const regApp = Vue.createApp({
     components: {
         VForm: VeeValidate.Form,
         VField: VeeValidate.Field,
@@ -36,7 +36,7 @@ const app = Vue.createApp({
                     return true;
                 }
             },
-            Step: 'Number',
+            Step: new URLSearchParams(location.search).get('reg') === 'code' ? 'Code' : 'Number',
             RegInput: '',
             EnteredNumber: ''
         }
@@ -67,6 +67,6 @@ const app = Vue.createApp({
     }
 })
 
-app.config.compilerOptions.delimiters = ['[[', ']]']
+regApp.config.compilerOptions.delimiters = ['[[', ']]']
 
-app.mount('#RegModal')
+regApp.mount('#RegModal')
