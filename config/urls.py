@@ -12,7 +12,6 @@ class CsrfTemplateView(TemplateView):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
     path(
         "",
         CsrfTemplateView.as_view(template_name="index.html"),
@@ -28,6 +27,5 @@ urlpatterns = [
         CsrfTemplateView.as_view(template_name="lk-order.html"),
         name="lk-order",
     ),
-
     path("auth/", include("apps.accounts.urls")),
 ]
