@@ -132,9 +132,9 @@ const app = Vue.createApp({
         }
     },
     methods: {
-        ToStep4() {
+        ToPayment() {
             this.Designed = true
-            setTimeout(() => this.$refs.ToStep4.click(), 0);
+            setTimeout(() => this.$refs.ToPayment.click(), 0);
         }
     },
     computed: {

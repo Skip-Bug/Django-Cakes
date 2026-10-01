@@ -50,7 +50,7 @@
 			<div class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start">
 				<h1 class="font_Gogh fs_40 cake_blue">Создайте торт своей мечты</h1>
 				<span class="cake_grey fw-lighter">Уникальность и красота в пару кликов</span>
-				<a href="#step3" class="btn text-white rounded-pill px-5 mt-3 shadow-none cake__button cake__bg_pink">Создать</a>
+				<a href="#Create_cake" class="btn text-white rounded-pill px-5 mt-3 shadow-none cake__button cake__bg_pink">Создать</a>
 			</div>
 			<div class="position-fixed bottom-0 m-5 w-auto end-0">
 				<div class="d-flex">
@@ -61,7 +61,7 @@
 			</div>
 		</article>
 
-		<article class="row pt-header d-flex justify-content-center" id="step2">
+		<article class="row pt-header d-flex justify-content-center" id="Catalog">
 			<h2 class="font_Gogh fs_40 cake_blue text-center mb-3">По любому поводу</h2>
 
 			<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
@@ -114,14 +114,14 @@
 				<p class="cake_grey mt-3">Готовый заказ доставят по адресу в заявке с 10:00 до 23:00 в пределах МКАД</p>
 			</div>
 			<div class="d-flex justify-content-center">
-				<a href="#step3" class="btn text-white rounded-pill mt-3 shadow-none cake__button cake__bg_pink">Оформить заказ</a>
+				<a href="#Create_cake" class="btn text-white rounded-pill mt-3 shadow-none cake__button cake__bg_pink">Оформить заказ</a>
 			</div>
 		</article>
 
 		<article id="VueApp">
-			<section class="row pt-header" id="step3">
+			<section class="row pt-header" id="Create_cake">
 				<h2 class="font_Gogh fs_40 cake_blue text-center">Создать свой торт</h2>
-				<v-form :validation-schema="schema1" @submit="ToStep4">
+				<v-form :validation-schema="schema1" @submit="ToPayment">
 					<div class="d-flex justify-content-end align-items-center position-relative">
 						<span class="cake_pink position-absolute start-0 top-50">
 							<error-message name="lvls" class="from__alert"></error-message>
@@ -207,12 +207,12 @@
 					</div>
 					<div class="d-flex justify-content-end">
 						<button type="submit" class="btn text-white rounded-pill mt-3 shadow-none cake__button cake__bg_pink">Подтвердить</button>
-						<a href="#step4" ref="ToStep4" class="d-none"></a>
+						<a href="#Payment" ref="ToPayment" class="d-none"></a>
 					</div>
 				</v-form>
 			</section>
 
-			<section class="row pt-header" id="step4" v-if="Designed">
+			<section class="row pt-header" id="Payment" v-if="Designed">
 				<form class="d-none">
 					<input v-model="Levels" value="1" type="radio" name="LEVELS">
 					<input v-model="Levels" value="2" type="radio" name="LEVELS">
@@ -362,8 +362,8 @@
 					<a href="#" class="text-decoration-none text-white">На чаепитие</a>
 				</div>
 				<div class="col-4 col-xl-2 d-flex flex-column">
-					<a href="{% url 'index' %}#step3" class="text-decoration-none text-white">Создать торт</a>
-					<a href="{% url 'index' %}#step2" class="text-decoration-none text-white">Каталог</a>
+					<a href="{% url 'index' %}#Create_cake" class="text-decoration-none text-white">Создать торт</a>
+					<a href="{% url 'index' %}#Catalog" class="text-decoration-none text-white">Каталог</a>
 					<a href="{% url 'index' %}#Contacts" class="text-decoration-none text-white">Контакты</a>
 				</div>
 				<div class="col-12 col-xl-6 d-flex flex-column align-items-start align-items-xl-end mt-3 mt-xl-0">
