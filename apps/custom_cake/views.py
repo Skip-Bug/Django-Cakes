@@ -1,23 +1,23 @@
 from django.shortcuts import render
 
 from .models import CakePart
+from .pricing import BASE_PRICE
 
 
-def index(request):
+def build_cake_details():
     parts = CakePart.objects.prefetch_related("options").order_by("order")
 
-    cake_details = {"parts": []}
+    cake_details = {"base_price": int(BASE_PRICE), "parts": []}
 
     for part in parts:
-        options = []
-        for opt in part.options.all():
-            options.append(
-                {
-                    "id": opt.id,
-                    "name": opt.name,
-                    "price": int(opt.price),
-                }
-            )
+        options = [
+            {
+                "id": opt.id,
+                "name": opt.name,
+                "price": int(opt.price),
+            }
+            for opt in part.options.all()
+        ]
         cake_details["parts"].append(
             {
                 "id": part.id,
@@ -31,4 +31,12 @@ def index(request):
             }
         )
 
-    return render(request, "index.html", {"cake_details": cake_details})
+    return cake_details
+
+
+def index(request):
+    return render(
+        request,
+        "index.html",
+        {"cake_details": build_cake_details(), "order_errors": [], "order_prefill": {}},
+    )
