@@ -40,7 +40,12 @@
 					</v-form>
 
 					<div class="modal-footer d-flex flex-column justify-content-between align-items-center text-center border-0 mx-5">
-						<p class="fs_12 cake_grey">[[ Step === 'Number' ? 'Нажимая на кнопку, вы соглашаетесь на обработку персональных данных в соответствии с политикой конфиденциальности' : Step === 'Code' ? 'Осталось времени: 05:00' : '' ]]</p>
+						<p v-if="Step === 'Number'" class="fs_12 cake_grey">
+							Нажимая на кнопку, вы соглашаетесь на обработку персональных данных в соответствии с
+							<a href="{% static 'docs/consent.pdf' %}" target="_blank" rel="noopener"
+							class="text-decoration-none cake_pink fs_12">согласием</a>.
+						</p>
+						<p v-else-if="Step === 'Code'" class="fs_12 cake_grey">Осталось времени: 05:00</p>
 						<a href="#" v-if="Step === 'Code'" @click.prevent="ToRegStep1" class="text-decoration-none cake_pink fs_12">изменить данные</a>
 					</div>
 				</div>
