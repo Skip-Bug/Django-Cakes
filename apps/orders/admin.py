@@ -26,6 +26,7 @@ class OrderAdmin(admin.ModelAdmin):
         "number",
         "contact_name",
         "contact_phone",
+        "address_display",
         "status",
         "payment_status",
         "total",
@@ -62,7 +63,7 @@ class OrderAdmin(admin.ModelAdmin):
         "urgency_surcharge",
         "total",
         "subtotal",
-        "address_snapshot",
+        "address_display",
         "created_at",
         "updated_at",
     )
@@ -85,7 +86,7 @@ class OrderAdmin(admin.ModelAdmin):
                     "delivery_date",
                     "delivery_time",
                     "is_urgent",
-                    "address_snapshot",
+                    "address_display",
                     "estimated_delivery_at",
                     "delivery_comment",
                     "comment",
@@ -120,6 +121,10 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description="Состав торта")
     def options_display(self, obj):
         return "\n".join(obj.options_lines)
+
+    @admin.display(description="Адрес")
+    def address_display(self, obj):
+        return obj.address_line or "—"
 
     @admin.action(description="Отметить оплаченными")
     def mark_as_paid(self, request, queryset):
