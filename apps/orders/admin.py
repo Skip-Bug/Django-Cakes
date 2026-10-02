@@ -84,7 +84,6 @@ class OrderAdmin(admin.ModelAdmin):
                     "guest_email",
                     "delivery_date",
                     "delivery_time",
-                    "delivery_slot",
                     "is_urgent",
                     "address_snapshot",
                     "estimated_delivery_at",
