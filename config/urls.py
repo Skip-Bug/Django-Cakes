@@ -4,6 +4,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
 
+from apps.custom_cake.views import index
+
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CsrfTemplateView(TemplateView):
@@ -12,12 +14,7 @@ class CsrfTemplateView(TemplateView):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
-    path(
-        "",
-        CsrfTemplateView.as_view(template_name="index.html"),
-        name="index",
-    ),
+    path("", index, name="index"),
     path(
         "lk/",
         CsrfTemplateView.as_view(template_name="lk.html"),
@@ -28,6 +25,5 @@ urlpatterns = [
         CsrfTemplateView.as_view(template_name="lk-order.html"),
         name="lk-order",
     ),
-
     path("auth/", include("apps.accounts.urls")),
 ]

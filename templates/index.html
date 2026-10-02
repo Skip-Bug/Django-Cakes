@@ -15,8 +15,12 @@
 					<div class="modal-header border-0 py-0">
 						<label for="reg" class="modal-title font_Gogh fs_40 cake_blue" id="RegModalLabel">Вход / Регистрация</label>
 					</div>
-					<form class="d-none">
-						<input v-model="RegInput" type="text" name="REG">
+					<form class="d-none" method="post"
+						:action="Step === 'Number' ? '/auth/request-code/' : '/auth/verify-code/'">
+						{% csrf_token %}
+						<input v-if="Step === 'Number'" v-model="RegInput" type="text" name="phone">
+						<input v-if="Step === 'Code'"   v-model="RegInput" type="text" name="code">
+						<input v-if="Step === 'Code'"   :value="EnteredNumber" type="hidden" name="phone">
 						<button type="submit" ref="HiddenFormSubmitReg">reg</button>
 					</form>
 					<v-form :validation-schema="RegSchema" class="modal-body position-relative d-flex flex-column align-items-center px-5 pb-4" @submit="RegSubmit">
@@ -36,7 +40,12 @@
 					</v-form>
 
 					<div class="modal-footer d-flex flex-column justify-content-between align-items-center text-center border-0 mx-5">
-						<p class="fs_12 cake_grey">[[ Step === 'Number' ? 'Нажимая на кнопку, вы соглашаетесь на обработку персональных данных в соответствии с политикой конфиденциальности' : Step === 'Code' ? 'Осталось времени: 05:00' : '' ]]</p>
+						<p v-if="Step === 'Number'" class="fs_12 cake_grey">
+							Нажимая на кнопку, вы соглашаетесь на обработку персональных данных в соответствии с
+							<a href="{% static 'docs/consent.pdf' %}" target="_blank" rel="noopener"
+							class="text-decoration-none cake_pink fs_12">согласием</a>.
+						</p>
+						<p v-else-if="Step === 'Code'" class="fs_12 cake_grey">Осталось времени: 05:00</p>
 						<a href="#" v-if="Step === 'Code'" @click.prevent="ToRegStep1" class="text-decoration-none cake_pink fs_12">изменить данные</a>
 					</div>
 				</div>
@@ -52,13 +61,14 @@
 				<span class="cake_grey fw-lighter">Уникальность и красота в пару кликов</span>
 				<a href="#Create_cake" class="btn text-white rounded-pill px-5 mt-3 shadow-none cake__button cake__bg_pink">Создать</a>
 			</div>
-			<div class="position-fixed bottom-0 m-5 w-auto end-0">
+			<!-- Старый виджет intercom, заменён на JivoSite (см. base.html) -->
+			<!-- <div class="position-fixed bottom-0 m-5 w-auto end-0">
 				<div class="d-flex">
 					<div class="cake__bg_blue rounded-pill p-3 border">
 						<img src="{% static 'img/intercom.svg' %}" alt="">
 					</div>
 				</div>
-			</div>
+			</div> -->
 		</article>
 
 		<article class="row pt-header d-flex justify-content-center" id="Catalog">
@@ -117,93 +127,73 @@
 				<a href="#Create_cake" class="btn text-white rounded-pill mt-3 shadow-none cake__button cake__bg_pink">Оформить заказ</a>
 			</div>
 		</article>
-
+		{{ cake_details|json_script:"cake-data" }}
 		<article id="VueApp">
 			<section class="row pt-header" id="Create_cake">
 				<h2 class="font_Gogh fs_40 cake_blue text-center">Создать свой торт</h2>
 				<v-form :validation-schema="schema1" @submit="ToPayment">
 					<div class="d-flex justify-content-end align-items-center position-relative">
 						<span class="cake_pink position-absolute start-0 top-50">
-							<error-message name="lvls" class="from__alert"></error-message>
-							<error-message name="form" class="from__alert"></error-message>
-							<error-message name="topping" class="from__alert"></error-message>
+							<template v-for="part in parts" :key="'err-' + part.id">
+								<error-message v-if="part.required" :name="'part_' + part.id" class="from__alert"></error-message>
+							</template>
 						</span>
 						<span class="z-index-1 fs_40 cake_pink text-end mt-5" id="cost">[[ Cost ]]₽</span>
 					</div>
-					<div class="d-flex align-items-center flex-wrap mb-3">
-						<span class="me-3 fs_40 cake_blue">Количество уровней</span>
-						<v-field v-model="Levels" type="radio" name="lvls" id="num1" value="1" class="d-none cake__input"></v-field>
-						<label for="num1" class="mx-2 px-3 py-1 cake_grey cake__label">1</label>
-						<v-field v-model="Levels" type="radio" name="lvls" id="num2" value="2" class="d-none cake__input"></v-field>
-						<label for="num2" class="mx-2 px-3 py-1 cake_grey cake__label">2</label>
-						<v-field v-model="Levels" type="radio" name="lvls" id="num3" value="3" class="d-none cake__input"></v-field>
-						<label for="num3" class="mx-2 px-3 py-1 cake_grey cake__label">3</label>
-					</div>
-
-					<div class="d-flex align-items-center flex-wrap mb-3">
-						<span class="me-3 fs_40 cake_blue">Форма</span>
-						<v-field v-model="Form" type="radio" name="form" id="form1" value="1" class="d-none cake__input"></v-field>
-						<label for="form1" class="mx-2 px-3 py-1 cake_grey cake__label">Круг</label>
-						<v-field v-model="Form" type="radio" name="form" id="form2" value="2" class="d-none cake__input"></v-field>
-						<label for="form2" class="mx-2 px-3 py-1 cake_grey cake__label">Квадрат</label>
-						<v-field v-model="Form" type="radio" name="form" id="form3" value="3" class="d-none cake__input"></v-field>
-						<label for="form3" class="mx-2 px-3 py-1 cake_grey cake__label">Прямоугольник</label>
-					</div>
-					<div class="d-flex align-items-center flex-wrap mb-3">
-						<span class="me-3 fs_40 cake_blue">Топпинг</span>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping1" value="1" class="d-none cake__input"></v-field>
-						<label for="topping1" class="mx-2 px-3 py-1 cake_grey cake__label">Без</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping2" value="2" class="d-none cake__input"></v-field>
-						<label for="topping2" class="mx-2 px-3 py-1 cake_grey cake__label">Белый соус</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping3" value="3" class="d-none cake__input"></v-field>
-						<label for="topping3" class="mx-2 px-3 py-1 cake_grey cake__label">Карамельный</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping4" value="4" class="d-none cake__input"></v-field>
-						<label for="topping4" class="mx-2 px-3 py-1 cake_grey cake__label">Кленовый</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping5" value="5" class="d-none cake__input"></v-field>
-						<label for="topping5" class="mx-2 px-3 py-1 cake_grey cake__label">Черничный</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping6" value="6" class="d-none cake__input"></v-field>
-						<label for="topping6" class="mx-2 px-3 py-1 cake_grey cake__label">Молочный шоколад</label>
-						<v-field v-model="Topping" type="radio" name="topping" id="topping7" value="7" class="d-none cake__input"></v-field>
-						<label for="topping7" class="mx-2 px-3 py-1 cake_grey cake__label">Клубничный</label>
-					</div>
+					<template v-for="part in parts" :key="part.id">
+						<div v-if="!part.requires_text && part.required"
+							class="d-flex align-items-center flex-wrap mb-3">
+							<span class="me-3 fs_40 cake_blue">[[ part.name ]]</span>
+							<template v-for="option in part.options" :key="option.id">
+								<v-field 
+									:model-value="selected[part.id]"
+									@update:model-value="selected[part.id] = $event"
+									type="radio"
+									:name="'part_' + part.id" :id="'opt_' + option.id"
+									:value="option.id" class="d-none cake__input">
+								</v-field>
+								<label :for="'opt_' + option.id" class="mx-2 px-3 py-1 cake_grey cake__label">
+									[[ option.name ]]
+								</label>
+							</template>
+						</div>
+					</template>
 					<h1 class="me-3 fs_40 cake_pink mb-3 mt-5">Дополнительно</h1>
-					<div class="d-flex align-items-center flex-wrap mb-3">
-						<span class="me-3 fs_40 cake_blue">Ягоды</span>
-						<v-field v-model="Berries" type="radio" name="berries" id="berries1" value="1" class="d-none cake__input"></v-field>
-						<label for="berries1" class="mx-2 px-3 py-1 cake_grey cake__label">Ежевика</label>
-						<v-field v-model="Berries" type="radio" name="berries" id="berries2" value="2" class="d-none cake__input"></v-field>
-						<label for="berries2" class="mx-2 px-3 py-1 cake_grey cake__label">Малина</label>
-						<v-field v-model="Berries" type="radio" name="berries" id="berries3" value="3" class="d-none cake__input"></v-field>
-						<label for="berries3" class="mx-2 px-3 py-1 cake_grey cake__label">Голубика</label>
-						<v-field v-model="Berries" type="radio" name="berries" id="berries4" value="4" class="d-none cake__input"></v-field>
-						<label for="berries4" class="mx-2 px-3 py-1 cake_grey cake__label">Клубника</label>
-					</div>
-					<div class="d-flex align-items-center flex-wrap mb-3">
-						<span class="me-3 fs_40 cake_blue">Декор</span>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor1" value="1" class="d-none cake__input"></v-field>
-						<label for="decor1" class="mx-2 px-3 py-1 cake_grey cake__label">Фисташки</label>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor2" value="2" class="d-none cake__input"></v-field>
-						<label for="decor2" class="mx-2 px-3 py-1 cake_grey cake__label">Безе</label>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor3" value="3" class="d-none cake__input"></v-field>
-						<label for="decor3" class="mx-2 px-3 py-1 cake_grey cake__label">Фундук</label>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor4" value="4" class="d-none cake__input"></v-field>
-						<label for="decor4" class="mx-2 px-3 py-1 cake_grey cake__label">Пекан</label>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor5" value="5" class="d-none cake__input"></v-field>
-						<label for="decor5" class="mx-2 px-3 py-1 cake_grey cake__label">Маршмеллоу</label>
-						<v-field v-model="Decor" type="radio" name="decor" id="decor6" value="6" class="d-none cake__input"></v-field>
-						<label for="decor6" class="mx-2 px-3 py-1 cake_grey cake__label">Марципан</label>
-					</div>
-					<div class="row mb-3">
-						<div class="col-5 col-md-4 col-lg-3">
-							<label class="me-3 fs_40 cake_blue" for="words">Надпись</label>
+					<template v-for="part in parts" :key="'below-' + part.id">
+						<div v-if="!part.requires_text && !part.required"
+							class="d-flex align-items-center flex-wrap mb-3">
+							<span class="me-3 fs_40 cake_blue">[[ part.name ]]</span>
+							<template v-for="option in part.options" :key="option.id">
+								<v-field 
+									:model-value="selected[part.id]"
+									@update:model-value="selected[part.id] = $event"
+									type="radio"
+									:name="'part_' + part.id" :id="'opt_' + option.id"
+									:value="option.id" class="d-none cake__input">
+								</v-field>
+								<label :for="'opt_' + option.id" class="mx-2 px-3 py-1 cake_grey cake__label">
+									[[ option.name ]]
+								</label>
+							</template>
 						</div>
-						<div class="col-7 col-md-8 col-lg-9 pt-2">
-							<input v-model="Words" :class="Words ? 'cake__border_blue': ''" type="text" name="words" id="words" placeholder="Например: «С днем рождения!»..." class="form-control cake__textinput">
+					</template>
+					<template v-for="part in parts" :key="'txt-' + part.id">
+						<div v-if="part.requires_text" class="row mb-3">
+							<div class="col-5 col-md-4 col-lg-3">
+								<label class="me-3 fs_40 cake_blue" for="words">[[ part.name ]]</label>
+							</div>
+							<div class="col-7 col-md-8 col-lg-9 pt-2">
+								<input v-model="Words" :class="Words ? 'cake__border_blue': ''"
+									type="text" id="words" :placeholder="part.hint"
+									class="form-control cake__textinput">
+							</div>
 						</div>
-					</div>
+					</template>
 					<div>
 						<label for="comment" class="cake_blue">Комментарий к заказу</label>
-						<textarea v-model="Comments" :class="Comments ? 'cake__border_blue': ''" name="comment" id="comment" rows="3" class="form-control mt-2 cake__textinput" style="resize: none"></textarea>
+						<textarea v-model="Comments" :class="Comments ? 'cake__border_blue': ''" 
+								name="comment" id="comment" rows="3"
+								class="form-control mt-2 cake__textinput" style="resize: none"></textarea>
 					</div>
 					<div class="d-flex justify-content-end">
 						<button type="submit" class="btn text-white rounded-pill mt-3 shadow-none cake__button cake__bg_pink">Подтвердить</button>
@@ -287,19 +277,16 @@
 									<error-message name="email_format" class="position-absolute bottom-0 cake_pink fs_12"></error-message>
 								</div>
 							</div>
-							<div class="col-12 col-lg-4 d-flex justify-content-center justify-content-lg-end">
-								<div class="cake__card p-4 position-relative cake_grey">
-									<span class="cake__badge rounded-pill">?</span>
-									<span>Количество уровней: [[ DATA.Levels[Levels] ]]</span>
-									<span>Форма уровней: [[ DATA.Forms[Form] ]]</span>
-									<p>Топинг: [[ DATA.Toppings[Topping] ]]</p>
-									<span>Дополнительно:</span>
-									<ul>
-										<li>Ягоды: [[ DATA.Berries[Berries] ]]</li>
-										<li>Декор: [[ DATA.Decors[Decor] ]]</li>
-									</ul>
-									<span>[[ Words === '' ? 'Без надписи' : Words ]]</span>
-								</div>
+							<div class="cake__card p-4 position-relative cake_grey">
+								<span class="cake__badge rounded-pill">?</span>
+								<template v-for="part in parts" :key="'summary-' + part.id">
+									<span v-if="!part.requires_text">
+										[[ part.name ]]: [[ optionName(part, selected[part.id]) ]]
+									</span>
+									<span v-else>
+										[[ Words === '' ? 'Без надписи' : Words ]]
+									</span>
+								</template>
 							</div>
 						</div>
 						<div class="d-flex flex-column position-relative pb-4">
@@ -380,4 +367,12 @@
 {% block scripts %}
 	<script src="{% static 'js/index.js' %}"></script>
 	<script src="{% static 'js/registration.js' %}"></script>
+
+	{% if request.GET.reg == 'code' %}
+		<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			new bootstrap.Modal('#RegModal').show();
+		});
+		</script>
+	{% endif %}
 {% endblock %}

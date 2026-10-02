@@ -6,113 +6,91 @@ const app = Vue.createApp({
         ErrorMessage: VeeValidate.ErrorMessage,
     },
     data() {
-        return {
-            schema1: {
-                lvls: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' количество уровней';
-                },
-                form: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' форму торта';
-                },
-                topping: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' топпинг';
-                }
-            },
-            schema2: {
-                name: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' имя';
-                },
-                phone: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' телефон';
-                },
-                name_format: (value) => {
-                    const regex = /^[a-zA-Zа-яА-Я]+$/
-                    if (!value) {
-                        return true;
-                    }
-                    if ( !regex.test(value)) {
+         
+            const cakeData = JSON.parse(
+                document.getElementById("cake-data").textContent
+            );
+            const selected = {};
+            cakeData.parts.forEach(part => {
+                selected[part.id] = null;
+            });
 
-                        return '⚠ Формат имени нарушен';
-                    }
-                    return true;
-                },
-                email_format: (value) => {
-                    const regex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i
-                    if (!value) {
-                        return true;
-                    }
-                    if ( !regex.test(value)) {
+            return {
 
-                        return '⚠ Формат почты нарушен';
-                    }
-                    return true;
-                },
-                phone_format:(value) => {
-                    const regex = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/
-                    if (!value) {
-                        return true;
-                    }
-                    if ( !regex.test(value)) {
+                schema2: {
+                    name: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' имя';
+                    },
+                    phone: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' телефон';
+                    },
+                    name_format: (value) => {
+                        const regex = /^[a-zA-Zа-яА-Я]+$/
+                        if (!value) {
+                            return true;
+                        }
+                        if ( !regex.test(value)) {
 
-                        return '⚠ Формат телефона нарушен';
-                    }
-                    return true;
-                },
-                email: (value) => {
-                    if (value) {
+                            return '⚠ Формат имени нарушен';
+                        }
                         return true;
-                    }
-                    return ' почту';
-                },
-                address: (value) => {
-                    if (value) {
+                    },
+                    email_format: (value) => {
+                        const regex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i
+                        if (!value) {
+                            return true;
+                        }
+                        if ( !regex.test(value)) {
+
+                            return '⚠ Формат почты нарушен';
+                        }
                         return true;
-                    }
-                    return ' адрес';
-                },
-                date: (value) => {
-                    if (value) {
+                    },
+                    phone_format:(value) => {
+                        const regex = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/
+                        if (!value) {
+                            return true;
+                        }
+                        if ( !regex.test(value)) {
+
+                            return '⚠ Формат телефона нарушен';
+                        }
                         return true;
+                    },
+                    email: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' почту';
+                    },
+                    address: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' адрес';
+                    },
+                    date: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' дату доставки';
+                    },
+                    time: (value) => {
+                        if (value) {
+                            return true;
+                        }
+                        return ' время доставки';
                     }
-                    return ' дату доставки';
                 },
-                time: (value) => {
-                    if (value) {
-                        return true;
-                    }
-                    return ' время доставки';
-                }
-            },
-            DATA: {
-                Levels: ['не выбрано', '1', '2', '3'],
-                Forms: ['не выбрано', 'Круг', 'Квадрат', 'Прямоугольник'],
-                Toppings: ['не выбрано', 'Без', 'Белый соус', 'Карамельный', 'Кленовый', 'Черничный', 'Молочный шоколад', 'Клубничный'],
-                Berries: ['нет', 'Ежевика', 'Малина', 'Голубика', 'Клубника'],
-                Decors: [ 'нет', 'Фисташки', 'Безе', 'Фундук', 'Пекан', 'Маршмеллоу', 'Марципан']
-            },
-            Costs: {
-                Levels: [0, 400, 750, 1100],
-                Forms: [0, 600, 400, 1000],
-                Toppings: [0, 0, 200, 180, 200, 300, 350, 200],
-                Berries: [0, 400, 300, 450, 500],
-                Decors: [0, 300, 400, 350, 300, 200, 280],
-                Words: 500
-            },
+            parts: cakeData.parts,
+            selected: selected,
+            
             Levels: 0,
             Form: 0,
             Topping: 0,
@@ -132,19 +110,50 @@ const app = Vue.createApp({
         }
     },
     methods: {
+        optionName(part, id) {
+            const opt = part.options.find(o => o.id === id);
+            return opt ? opt.name : '—';
+        },
         ToPayment() {
             this.Designed = true
             setTimeout(() => this.$refs.ToPayment.click(), 0);
         }
     },
     computed: {
+        schema1() {
+            const schema = {};
+            this.parts.forEach(part => {
+                if (part.required) {
+                    schema['part_' + part.id] = (value) => {
+                        if (value) return true;
+                        return 'Укажите: ' + part.name;
+                    };
+                }
+            });
+            return schema;
+        },
         Cost() {
-            let W = this.Words ? this.Costs.Words : 0
-            return this.Costs.Levels[this.Levels] + this.Costs.Forms[this.Form] +
-                this.Costs.Toppings[this.Topping] + this.Costs.Berries[this.Berries] +
-                this.Costs.Decors[this.Decor] + W
+            let cost = 0;
+
+            this.parts.forEach(part => {
+                const selectedId = this.selected[part.id];
+                if (!selectedId) return;
+
+                const opt = part.options.find(o => o.id === selectedId);
+                if (opt) cost += opt.price;
+            });
+
+            if (this.Words) {
+                const wordsPart = this.parts.find(p => p.requires_text);
+                if (wordsPart && wordsPart.options.length) {
+                    cost += wordsPart.options[0].price;
+                }
+            }
+
+            return cost;
         }
     }
+    
 })
 
 app.config.compilerOptions.delimiters = ['[[', ']]']

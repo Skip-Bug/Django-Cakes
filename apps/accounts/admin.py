@@ -1,6 +1,29 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import PhoneOTP
+from .models import PhoneOTP, User
+
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    readonly_fields = ("last_login",)
+    ordering = ("phone",)
+    list_display = ("phone", "name", "email", "is_staff", "is_active")
+    search_fields = ("phone", "name", "email")
+
+    fieldsets = (
+        (None, {"fields": ("phone", "password")}),
+        ("Личные данные", {"fields": ("name", "email")}),
+        ("Права", {"fields": ("is_active", "is_staff", "is_superuser",
+                              "groups", "user_permissions")}),
+        ("Даты", {"fields": ("last_login",)}),
+    )
+    add_fieldsets = (
+        (None, {
+            "classes": ("wide",),
+            "fields": ("phone", "password1", "password2"),
+        }),
+    )
 
 
 @admin.register(PhoneOTP)

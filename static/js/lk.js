@@ -1,15 +1,16 @@
-const app = Vue.createApp({
+const lkApp = Vue.createApp({
     components: {
         VForm: VeeValidate.Form,
         VField: VeeValidate.Field,
         ErrorMessage: VeeValidate.ErrorMessage,
     },
     data() {
+        const el = document.getElementById('LK');
         return {
             Edit: false,
-            Name: 'Ирина',
-            Phone: '8 909 000-00-00',
-            Email: 'nyam@gmail.com',
+            Name: el.dataset.name || '',
+            Phone: el.dataset.phone || '',
+            Email: el.dataset.email || '',
             Schema: {
                 name_format: (value) => {
                     const regex = /^[a-zA-Zа-яА-я]+$/
@@ -55,5 +56,5 @@ const app = Vue.createApp({
     }
 })
 
-app.config.compilerOptions.delimiters = ['[[', ']]']
-app.mount('#LK')
+lkApp.config.compilerOptions.delimiters = ['[[', ']]']
+lkApp.mount('#LK')
