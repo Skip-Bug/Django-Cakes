@@ -128,6 +128,8 @@
 			</div>
 		</article>
 		{{ cake_details|json_script:"cake-data" }}
+		{{ order_errors|json_script:"order-errors" }}
+		{{ order_prefill|json_script:"order-prefill" }}
 		<article id="VueApp">
 			<section class="row pt-header" id="Create_cake">
 				<h2 class="font_Gogh fs_40 cake_blue text-center">Создать свой торт</h2>
@@ -203,47 +205,25 @@
 			</section>
 
 			<section class="row pt-header" id="Payment" v-if="Designed">
-				<form class="d-none">
-					<input v-model="Levels" value="1" type="radio" name="LEVELS">
-					<input v-model="Levels" value="2" type="radio" name="LEVELS">
-					<input v-model="Levels" value="3" type="radio" name="LEVELS">
-					<br>
-					<input v-model="Form" value="1" type="radio" name="FORM">
-					<input v-model="Form" value="2" type="radio" name="FORM">
-					<input v-model="Form" value="3" type="radio" name="FORM">
-					<br>
-					<input v-model="Topping" value="1" type="radio" name="TOPPING">
-					<input v-model="Topping" value="2" type="radio" name="TOPPING">
-					<input v-model="Topping" value="3" type="radio" name="TOPPING">
-					<input v-model="Topping" value="4" type="radio" name="TOPPING">
-					<input v-model="Topping" value="5" type="radio" name="TOPPING">
-					<input v-model="Topping" value="6" type="radio" name="TOPPING">
-					<input v-model="Topping" value="7" type="radio" name="TOPPING">
-					<br>
-					<input v-model="Berries" value="1" type="radio" name="BERRIES">
-					<input v-model="Berries" value="2" type="radio" name="BERRIES">
-					<input v-model="Berries" value="3" type="radio" name="BERRIES">
-					<input v-model="Berries" value="4" type="radio" name="BERRIES">
-					<br>
-					<input v-model="Decor" value="1" type="radio" name="DECOR">
-					<input v-model="Decor" value="2" type="radio" name="DECOR">
-					<input v-model="Decor" value="3" type="radio" name="DECOR">
-					<input v-model="Decor" value="4" type="radio" name="DECOR">
-					<input v-model="Decor" value="5" type="radio" name="DECOR">
-					<input v-model="Decor" value="6" type="radio" name="DECOR">
-					<br>
-					<input v-model="Words" type="text" name="WORDS">
-					<input v-model="Comments" type="text" name="COMMENTS">
+				<form class="d-none" method="post" action="{% url 'orders:create' %}">
+					{% csrf_token %}
+					<input type="hidden" name="options" :value="SelectedOptions">
 
-					<input v-model="Name" type="text" name="NAME">
-					<input v-model="Phone" type="tel" name="PHONE">
-					<input v-model="Email" type="email" name="EMAIL">
-					<input v-model="Address" type="text" name="ADDRESS">
-					<input v-model="Dates" type="date" name="DATE">
-					<input v-model="Time" type="time" name="TIME">
-					<input v-model="DelivComments" type="text" name="DELIVCOMMENTS">
+					<input v-model="Words" type="text" name="inscription">
+					<input v-model="Comments" type="text" name="comment">
+
+					<input v-model="Name" type="text" name="guest_name">
+					<input v-model="Phone" type="tel" name="guest_phone">
+					<input v-model="Email" type="email" name="guest_email">
+					<input v-model="Address" type="text" name="address">
+					<input v-model="Dates" type="date" name="delivery_date">
+					<input v-model="Time" type="time" name="delivery_time">
+					<input v-model="DelivComments" type="text" name="delivery_comment">
 					<button type="submit" ref="HiddenFormSubmit">Submit Order</button>
 				</form>
+				<div v-if="OrderErrors.length" class="alert alert-danger">
+					<p v-for="(err, i) in OrderErrors" :key="i" class="mb-0">[[ err ]]</p>
+				</div>
 				<v-form :validation-schema="schema2" @submit="this.$refs.HiddenFormSubmit.click()">
 					<div class="col">
 						<div class="d-flex flex-column position-relative pb-5">
