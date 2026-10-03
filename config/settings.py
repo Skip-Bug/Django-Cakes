@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from environs import Env
+from environs import Env 
+import os
 
 env = Env()
 env.read_env()
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     "apps.custom_cake",
     "apps.accounts",
     "apps.orders",
+    "apps.ready_cake"
 ]
 
 MIDDLEWARE = [
@@ -105,4 +107,7 @@ LOGIN_URL = "/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 PHONENUMBER_DEFAULT_REGION = "RU"
-PHONENUMBER_DEFAULT_FORMAT = "E164"
+PHONENUMBER_DEFAULT_FORMAT = "E164" 
+
+MEDIA_URL = '/media/' 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
