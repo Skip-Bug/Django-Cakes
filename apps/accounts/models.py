@@ -38,9 +38,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    phone = PhoneNumberField(unique=True, verbose_name="Телефон")
+    phone = PhoneNumberField("Телефон", unique=True)
     name = models.CharField("Имя", max_length=150, blank=True)
-    email = models.EmailField("Email", blank=True)
+    email = models.EmailField("Email", unique=True, blank=True)
+    address = models.TextField("Адрес", blank=True)
 
     is_active = models.BooleanField("Активен", default=True)
     is_staff = models.BooleanField("Сотрудник", default=False)
