@@ -92,6 +92,7 @@ def check_auth(request):
             "phone": str(user.phone),
             "name": user.name,
             "email": user.email,
+            "address": user.address,
         }
     )
 

@@ -13,7 +13,7 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {"fields": ("phone", "password")}),
-        ("Личные данные", {"fields": ("name", "email")}),
+        ("Личные данные", {"fields": ("name", "email", "address")}),
         (
             "Права",
             {
