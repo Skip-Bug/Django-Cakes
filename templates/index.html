@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load cake_tags %}
 
 {% block title %}Тортики{% endblock %}
 
@@ -74,27 +75,8 @@
 		<article class="row pt-header d-flex justify-content-center" id="Catalog">
 			<h2 class="font_Gogh fs_40 cake_blue text-center mb-3">По любому поводу</h2>
 
-			<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
-				<div class="card border-0 cake__hover">
-					<a href="#" class="card-img-overlay"></a>
-					<img src="{% static 'img/image1.png' %}" alt="" class="">
-					<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На чаепитие</span>
-				</div>
-			</div>
-			<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
-				<div class="card border-0 cake__hover">
-					<a href="#" class="card-img-overlay"></a>
-					<img src="{% static 'img/image2.png' %}" alt="" class="">
-					<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На день рождения</span>
-				</div>
-			</div>
-			<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
-				<div class="card border-0 cake__hover">
-					<a href="#" class="card-img-overlay"></a>
-					<img src="{% static 'img/image3.png' %}" alt="" class="">
-					<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На свадьбу</span>
-				</div>
-			</div>
+   			{% show_catalog %}
+
 			<div class="d-flex justify-content-center mt-2">
 				<button class="btn text-white rounded-pill shadow-none cake__button cake__bg_pink">Открыть каталог</button>
 			</div>
