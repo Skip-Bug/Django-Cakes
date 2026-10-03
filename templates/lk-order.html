@@ -20,7 +20,7 @@
 					<input v-model="Name" type="text" name="name">
 					<input v-model="Phone" type="tel" name="phone" readonly>
 					<input v-model="Email" type="email" name="email">
-					<input v-model="Address" type="addres" name="address">
+					<input v-model="Address" type="text" name="address">
 					<button type="submit" ref="HiddenFormSubmit">Apply Changes</button>
 				</form>
 				<v-form :validation-schema="Schema" @submit="ApplyChanges">
@@ -64,6 +64,10 @@
 							<li class="list-group-item border-0 py-61 position-relative">
 								<v-field v-model="Email" type="text" name="email_format" id="email" :readonly="!Edit" class="form-control my-2 cake__textinput"></v-field>
 								<error-message name="email_format" class="position-absolute bottom-0 cake_pink fs_12"></error-message>
+							</li>
+							<li class="list-group-item border-0 py-61 position-relative">
+								<v-field v-model="Address" type="text" name="address_format" id="address" :readonly="!Edit" class="form-control my-2 cake__textinput"></v-field>
+								<error-message name="address_format" class="position-absolute bottom-0 cake_pink fs_12"></error-message>
 							</li>
 						</ul>
 					</div>

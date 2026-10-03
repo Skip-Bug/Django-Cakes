@@ -41,6 +41,7 @@ def build_order_prefill(user):
         "guest_name": user.name,
         "guest_email": user.email,
         "guest_phone": str(user.phone or ""),
+        "address": user.address or "",
     }
 
 
