@@ -20,11 +20,7 @@ def request_code(request):
     if not phone:
         return redirect("/?reg=code")
 
-    last = (
-        PhoneOTP.objects.filter(phone=phone)
-        .order_by("-created_at")
-        .first()
-    )
+    last = PhoneOTP.objects.filter(phone=phone).order_by("-created_at").first()
     if last and (timezone.now() - last.created_at).total_seconds() < 60:
         return redirect("/?reg=error")
 

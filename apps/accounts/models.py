@@ -68,7 +68,5 @@ class PhoneOTP(models.Model):
 
     def is_valid(self):
         return (
-            not self.is_used
-            and timezone.now() < self.expires_at
-            and self.attempts < 5
+            not self.is_used and timezone.now() < self.expires_at and self.attempts < 5
         )
