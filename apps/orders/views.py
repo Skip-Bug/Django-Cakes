@@ -57,7 +57,7 @@ def apply_promo(order, subtotal, code):
     """Начисляет скидку, если промокод применим. Возвращает текст ошибки."""
     if not code:
         return ""
-    promo = PromoCode.objects.filter(code=code).first()
+    promo = PromoCode.objects.filter(code__iexact=code).first()
     if promo is None:
         return "Промокод не найден"
 

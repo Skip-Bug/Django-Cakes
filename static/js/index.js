@@ -109,7 +109,8 @@ const app = Vue.createApp({
             Address: prefill.address || null,
             Dates: prefill.delivery_date || null,
             Time: prefill.delivery_time || null,
-            DelivComments: prefill.delivery_comment || ''
+            DelivComments: prefill.delivery_comment || '',
+            Promo: prefill.promo || ''
         }
     },
     methods: {

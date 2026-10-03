@@ -23,6 +23,9 @@
 									{% for line in order.options_lines %}
 									<span class="cake_blue">{{ line }}</span><br>
 									{% endfor %}
+									{% if order.promo_discount %}
+									<span class="cake_pink">Скидка ({{ order.promo_code }}): −{{ order.promo_discount }} ₽</span><br>
+									{% endif %}
 									<span class="cake_pink">Цена: {{ order.total }} ₽</span>
 								</div>
 								<div class="modal-footer d-flex justify-content-between">

@@ -201,6 +201,7 @@
 					<input v-model="Dates" type="date" name="delivery_date">
 					<input v-model="Time" type="time" name="delivery_time">
 					<input v-model="DelivComments" type="text" name="delivery_comment">
+					<input v-model="Promo" type="text" name="promo">
 					<button type="submit" ref="HiddenFormSubmit">Submit Order</button>
 				</form>
 				<div v-if="OrderErrors.length" class="alert alert-danger">
@@ -246,7 +247,7 @@
 										[[ part.name ]]: [[ optionName(part, selected[part.id]) ]]
 									</span>
 									<span v-else>
-										[[ Words === '' ? 'Без надписи' : Words ]]
+										[[ part.name ]]: [[ Words === '' ? 'Без надписи' : Words ]]
 									</span>
 								</template>
 							</div>
@@ -278,6 +279,10 @@
 								<textarea v-model="DelivComments" :class="DelivComments ? 'cake__border_blue': ''" id="deliv-comment" class="form-control cake__textinput mt-3" rows="2" style="resize: none"></textarea>
 							</div>
 							<div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
+								<div class="d-flex align-items-center mb-2">
+									<label for="promo" class="cake_blue me-2 mb-0">Промокод</label>
+									<v-field v-model="Promo" :class="Promo ? 'cake__border_blue' : ''" type="text" name="promo" id="promo" placeholder="Введите код" class="form-control cake__textinput" style="max-width: 220px"></v-field>
+								</div>
 								<div class="d-flex">
 									<span class="cake_pink fs_40 fw-bold me-2">Итого: [[ Cost ]]₽</span>
 								</div>

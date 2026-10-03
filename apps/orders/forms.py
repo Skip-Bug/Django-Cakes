@@ -131,4 +131,4 @@ class OrderForm(forms.ModelForm):
 
     def get_promo(self):
         code = (self.cleaned_data.get("promo") or "").strip()
-        return code or ""
+        return code.upper()
