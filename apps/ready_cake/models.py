@@ -8,7 +8,7 @@ class Cake(models.Model):
     weight = models.DecimalField(
         max_digits=5, decimal_places=2, verbose_name="Вес (кг)"
     )
-    image = models.ImageField(upload_to="goods", verbose_name="Картинка")
+    image = models.ImageField(upload_to="ready_cake", verbose_name="Картинка")
 
     class Meta:
         verbose_name = "Торт"
