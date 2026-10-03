@@ -8,8 +8,8 @@ from .models import PhoneOTP, User
 class UserAdmin(BaseUserAdmin):
     readonly_fields = ("last_login",)
     ordering = ("phone",)
-    list_display = ("phone", "name", "email", "is_staff", "is_active")
-    search_fields = ("phone", "name", "email")
+    list_display = ("phone", "name", "email", "address", "is_staff", "is_active")
+    search_fields = ("phone", "name", "email", "address")
 
     fieldsets = (
         (None, {"fields": ("phone", "password")}),

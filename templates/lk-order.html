@@ -12,12 +12,15 @@
 			<div class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" id="LK"
 				data-name="{{ user.name }}"
 				data-phone="{{ user.phone }}"
-				data-email="{{ user.email }}">
+				data-email="{{ user.email }}"
+				data-address="{{ user.address }}"
+				>
 				<form class="d-none" method="post" action="{% url 'profile' %}">
 					{% csrf_token %}
 					<input v-model="Name" type="text" name="name">
 					<input v-model="Phone" type="tel" name="phone" readonly>
 					<input v-model="Email" type="email" name="email">
+					<input v-model="Address" type="addres" name="address">
 					<button type="submit" ref="HiddenFormSubmit">Apply Changes</button>
 				</form>
 				<v-form :validation-schema="Schema" @submit="ApplyChanges">
@@ -44,6 +47,9 @@
 							</li>
 							<li class="list-group-item border-0 ps-0">
 								<h1 class="fs_40 cake_blue">Почта</h1>
+							</li>
+							<li class="list-group-item border-0 ps-0">
+								<h1 class="fs_40 cake_blue">Адрес</h1>
 							</li>
 						</ul>
 						<ul class="list-group">

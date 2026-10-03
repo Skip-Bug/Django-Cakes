@@ -11,6 +11,7 @@ const lkApp = Vue.createApp({
             Name: el.dataset.name || '',
             Phone: el.dataset.phone || '',
             Email: el.dataset.email || '',
+            Address: el.dataset.address || '',
             Schema: {
                 name_format: (value) => {
                     const regex = /^[a-zA-Zа-яА-я]+$/
@@ -44,6 +45,13 @@ const lkApp = Vue.createApp({
                         return '⚠ Формат почты нарушен';
                     }
                     return true;
+                },    
+                address_format: (value) => {
+                    if (!value) {
+                        return '⚠ Укажите адрес';
+                    }
+                    return true;
+    
                 }
             }
         }
