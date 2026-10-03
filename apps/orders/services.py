@@ -45,7 +45,7 @@ def calculate_price(options, is_urgent=False):
         if is_urgent
         else Decimal("0")
     )
-    total = subtotal + urgency_surcharge + DELIVERY_FEE
+    total = subtotal + urgency_surcharge + DELIVERY_FEE # пересмотреть
 
     return {
         "base_price": int(BASE_PRICE),

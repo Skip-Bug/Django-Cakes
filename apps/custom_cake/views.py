@@ -34,9 +34,23 @@ def build_cake_details():
     return cake_details
 
 
+def build_order_prefill(user):
+    if not user.is_authenticated:
+        return {}
+    return {
+        "guest_name": user.name,
+        "guest_email": user.email,
+        "guest_phone": str(user.phone or ""),
+    }
+
+
 def index(request):
     return render(
         request,
         "index.html",
-        {"cake_details": build_cake_details(), "order_errors": [], "order_prefill": {}},
+        {
+            "cake_details": build_cake_details(),
+            "order_errors": [],
+            "order_prefill": build_order_prefill(request.user),
+        },
     )

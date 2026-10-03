@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.custom_cake.models import CakePartOption
-from apps.custom_cake.views import build_cake_details
+from apps.custom_cake.views import build_cake_details, build_order_prefill
 from apps.orders.forms import OrderForm
 from apps.orders.models import Order, OrderEvent, PromoCode
 from apps.orders.services import calculate_price
@@ -117,6 +117,13 @@ def order_create(request):
         message for field_errors in form.errors.values() for message in field_errors
     ]
 
+    posted = {
+        key: value
+        for key, value in form.data.items()
+        if key not in ("csrfmiddlewaretoken", "options") and value
+    }
+    order_prefill = {**build_order_prefill(request.user), **posted}
+
     return render(
         request,
         "index.html",
@@ -124,10 +131,6 @@ def order_create(request):
             "cake_details": build_cake_details(),
             "form": form,
             "order_errors": list(dict.fromkeys(messages)),
-            "order_prefill": {
-                key: value
-                for key, value in form.data.items()
-                if key not in ("csrfmiddlewaretoken", "options")
-            },
+            "order_prefill": order_prefill,
         },
     )
