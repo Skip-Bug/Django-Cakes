@@ -10,9 +10,9 @@ class Cake(models.Model):
     )
     image = models.ImageField(upload_to="goods", verbose_name="Картинка")
 
-    def __str__(self):
-        return self.title
-
     class Meta:
         verbose_name = "Торт"
         verbose_name_plural = "Торты"
+
+    def __str__(self):
+        return self.title
