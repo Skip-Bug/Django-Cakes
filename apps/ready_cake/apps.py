@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class GoodsConfig(AppConfig):
-    name = 'apps.ready_cake'
+    name = "apps.ready_cake"
