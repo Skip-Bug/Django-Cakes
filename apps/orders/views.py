@@ -1,4 +1,6 @@
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -7,6 +9,24 @@ from apps.custom_cake.views import build_cake_details, build_order_prefill
 from apps.orders.forms import OrderForm
 from apps.orders.models import Order, OrderEvent, PromoCode
 from apps.orders.services import calculate_price
+
+
+def user_orders(user):
+    """Заказы пользователя: его собственные и гостевые на тот же телефон."""
+    return Order.objects.filter(
+        Q(customer=user)
+        | Q(customer__isnull=True, guest_phone=str(user.phone or ""))
+    )
+
+
+@login_required(login_url="/?reg=code")
+def lk(request):
+    return render(request, "lk.html", {"orders": user_orders(request.user)})
+
+
+@login_required(login_url="/?reg=code")
+def order_history(request):
+    return render(request, "lk-order.html", {"orders": user_orders(request.user)})
 
 
 def resolve_options(option_ids):

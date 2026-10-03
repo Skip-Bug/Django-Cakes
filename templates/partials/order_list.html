@@ -1,0 +1,36 @@
+{% for order in orders %}
+				<section class="my-2">
+					<span class="cake_blue lk__order d-flex" data-bs-toggle="modal" data-bs-target="#OrderModal{{ order.id }}">
+						{% if order.is_active %}
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-clock-fill" viewBox="0 0 16 16">
+							<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+						</svg>
+						{% else %}
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+							<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+						</svg>
+						{% endif %}
+						<span class="ms-1">#{{ order.number }}{% if order.inscription %} {{ order.inscription }}{% endif %}</span>
+					</span>
+					<aside class="modal fade" id="OrderModal{{ order.id }}" tabindex="-1" aria-labelledby="ModalLabel{{ order.id }}" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title cake_pink" id="ModalLabel{{ order.id }}">#{{ order.number }}{% if order.inscription %} {{ order.inscription }}{% endif %}</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									{% for line in order.options_lines %}
+									<span class="cake_blue">{{ line }}</span><br>
+									{% endfor %}
+									<span class="cake_pink">Цена: {{ order.total }} ₽</span>
+								</div>
+								<div class="modal-footer d-flex justify-content-between">
+									<span class="cake_blue d-flex">Статус: {{ order.get_status_display }}</span>
+									<span class="cake_blue d-flex align-items-center">Доставка: {{ order.delivery_date|date:"d.m.Y" }} {{ order.delivery_time|time:"H:i" }}</span>
+								</div>
+							</div>
+						</div>
+					</aside>
+				</section>
+{% endfor %}
