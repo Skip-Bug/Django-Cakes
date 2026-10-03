@@ -28,6 +28,7 @@ urlpatterns = [
         name="lk-order",
     ),
     path("auth/", include("apps.accounts.urls")),
+    path("orders/", include("apps.orders.urls")),
 ]
 
 if settings.DEBUG:
