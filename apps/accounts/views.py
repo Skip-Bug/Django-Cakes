@@ -119,6 +119,7 @@ def update_profile(request):
     user = request.user
     user.name = request.POST.get("name", "").strip()
     user.email = request.POST.get("email", "").strip()
-    user.save(update_fields=["name", "email"])
+    user.address = request.POST.get("address", "").strip()
+    user.save(update_fields=["name", "email", "address"])
 
     return redirect("/lk/")
