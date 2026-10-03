@@ -53,6 +53,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.ready_cake.context_processors.ready_cakes",
                 "apps.accounts.context_processors.jivosite",
             ],
         },
