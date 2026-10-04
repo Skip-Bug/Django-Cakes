@@ -5,8 +5,8 @@
                 <a href="#" class="position-absolute top-0 start-0 w-100 h-100"></a>
                 <img src="{{ cake.image.url }}"
                      alt="{{ cake.title }} - {{ cake.description|truncatewords:8 }}"
-                     class="card-img-top img-fluid object-fit-cover"
-                     style="height: 300px;">
+                     class="card-img-top img-fluid w-100"
+                     style="aspect-ratio: 16 / 9; object-fit: cover;">
                 <div class="card-body p-4">
                     <h5 class="font_Gogh fs_24 cake_blue card-title">{{ cake.title }}</h5>
                     <p class="fs_14 fw-lighter cake_grey card-text">
