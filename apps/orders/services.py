@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from apps.custom_cake.pricing import BASE_PRICE, DELIVERY_FEE
+from apps.orders.models import READY_PART_NAME
 
 # Наценка за срочный заказ: на сайте обещано +20%.
 URGENCY_SURCHARGE_RATE = Decimal("0.20")
@@ -45,7 +46,7 @@ def calculate_price(options, is_urgent=False):
         if is_urgent
         else Decimal("0")
     )
-    total = subtotal + urgency_surcharge + DELIVERY_FEE # пересмотреть
+    total = subtotal + urgency_surcharge + DELIVERY_FEE  # пересмотреть
 
     return {
         "base_price": int(BASE_PRICE),
@@ -56,4 +57,39 @@ def calculate_price(options, is_urgent=False):
         "total": int(total),
         "options_snapshot": snapshot,
         "is_urgent": is_urgent,
+    }
+
+
+def price_ready_cakes(items):
+    """Стоимость заказа готовых тортов: цены из справочника, без опций.
+
+    items — список пар (Cake, количество). Готовый торт не изготавливается,
+    поэтому наценка за срочность не начисляется. Доставка берётся один раз
+    на заказ, а не за каждый торт.
+
+    Название и цена сохраняются в снимке, чтобы переименование позиции
+    каталога или снятие её с продажи не испортило уже принятый заказ.
+    """
+    snapshot = {
+        READY_PART_NAME: [
+            {
+                "id": cake.id,
+                "name": cake.title,
+                "price": int(cake.price),
+                "qty": qty,
+            }
+            for cake, qty in items
+        ]
+    }
+    options_total = sum(int(cake.price) * qty for cake, qty in items)
+
+    return {
+        "base_price": 0,
+        "options_total": options_total,
+        "inscription_price": 0,
+        "urgency_surcharge": 0,
+        "delivery_fee": int(DELIVERY_FEE),
+        "total": options_total + int(DELIVERY_FEE),
+        "options_snapshot": snapshot,
+        "is_urgent": False,
     }

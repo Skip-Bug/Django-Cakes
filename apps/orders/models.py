@@ -6,6 +6,11 @@ from django.utils import timezone
 
 from apps.orders.utils import make_order_number, make_payment_token
 
+# Ключ снимка, под которым лежат готовые торты из каталога.
+# Такой заказ отличается от заказа своего торта только этим ключом:
+# конфигурации у готового торта нет, а цена целиком в options_total.
+READY_PART_NAME = "Готовый торт"
+
 
 class PromoCode(models.Model):
     """Промокод для скидки при заказе."""
@@ -292,6 +297,11 @@ class Order(models.Model):
             for item in data if isinstance(data, list) else [data]:
                 yield part_name, item
 
+    @property
+    def is_ready_cake_order(self) -> bool:
+        """Заказ готовых тортов из каталога, а не торта своей конфигурации."""
+        return READY_PART_NAME in (self.options_snapshot or {})
+
     @staticmethod
     def _text_option_ids() -> set:
         """id опций, для которых в заказе хранится надпись, а не название."""
@@ -306,14 +316,25 @@ class Order(models.Model):
     @property
     def options_lines(self) -> list:
         """Человекочитаемый состав торта для админки и печати."""
-        text_option_ids = self._text_option_ids()
-        lines = []
+        return [f"{name}: {label}" for name, label, _ in self._labelled_items()]
+
+    def _labelled_items(self):
+        """Тройки (часть, подпись, цена позиции) из снимка.
+
+        Подпись учитывает надпись и количество: «Медовик ×3»,
+        цена — итог за количество, а не за штуку.
+        """
+        # У готовых тортов id торта и id текстовой опции — из разных таблиц,
+        # сверять их нельзя: сверка только для заказа своей конфигурации.
+        text_option_ids = set() if self.is_ready_cake_order else self._text_option_ids()
         for part_name, item in self._snapshot_items():
             value = item.get("name", "")
             if item.get("id") in text_option_ids and self.inscription:
                 value = self.inscription
-            lines.append(f"{part_name}: {value}")
-        return lines
+            qty = item.get("qty", 1)
+            if qty > 1:
+                value = f"{value} ×{qty}"
+            yield part_name, value, item.get("price", 0) * qty
 
     @property
     def priced_lines(self) -> list:
@@ -322,15 +343,14 @@ class Order(models.Model):
         Возвращает [{"label": "Ягоды: Клубника", "price": 500}, ...],
         сумма цен равна subtotal.
         """
-        text_option_ids = self._text_option_ids()
-        lines = [{"label": "Торт", "price": self.base_price}]
-        for part_name, item in self._snapshot_items():
-            name = item.get("name", "")
-            if item.get("id") in text_option_ids and self.inscription:
-                name = self.inscription
-            lines.append(
-                {"label": f"{part_name}: {name}", "price": item.get("price", 0)}
-            )
+        # У готового торта нет конфигурации: база нулевая, строка была бы шумом.
+        lines = (
+            []
+            if self.is_ready_cake_order
+            else [{"label": "Торт", "price": self.base_price}]
+        )
+        for part_name, label, price in self._labelled_items():
+            lines.append({"label": f"{part_name}: {label}", "price": price})
         return lines
 
     def mark_paid(self):

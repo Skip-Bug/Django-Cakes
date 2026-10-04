@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Готовые торты — оформление{% endblock %}
+
+{% block content %}
+	<div class="container mt-header mb-5" id="VueApp">
+		<div class="row justify-content-center mt-5">
+			<div class="col-12 col-lg-10 col-xxl-8 d-flex flex-column">
+				<h1 class="font_Gogh fs_40 cake_blue">Готовые торты</h1>
+				<span class="cake_grey">Выберите торты из каталога — конфигурация не нужна</span>
+
+				<form method="post" class="d-flex flex-column mt-4"
+					action="{% url 'orders:ready-create' %}">
+					{% csrf_token %}
+					<input type="hidden" name="cakes" id="cakes-json" :value="CakesJson">
+					{{ form.cakes.errors }}
+
+					{% if order_errors %}
+					<div class="alert alert-danger">
+						{% for error in order_errors %}
+						<p class="mb-0">{{ error }}</p>
+						{% endfor %}
+					</div>
+					{% endif %}
+
+					<h2 class="fs_40 cake_blue mb-3">Каталог</h2>
+					<div class="row">
+						<template v-for="cake in Cakes" :key="cake.id">
+							<div class="col-12 col-sm-6 col-lg-4 mb-3">
+								<label class="cake__card p-3 d-flex flex-column position-relative w-100 h-100"
+									:class="Qty(cake.id) ? 'cake__border_blue' : ''"
+									style="max-width: none; cursor: pointer;">
+									<img :src="cake.image" :alt="cake.title"
+										class="img-fluid w-100 rounded"
+										style="aspect-ratio: 16 / 9; object-fit: cover;">
+									<span class="font_Gogh fs_24 cake_blue mt-2">{{ cake.title }}</span>
+									<span class="cake_grey fw-lighter fs_14">{{ cake.description }}</span>
+									<span class="d-flex justify-content-between align-items-center mt-2">
+										<span class="fw-bold fs_5 cake_pink">[[ cake.price ]] ₽</span>
+										<span class="fs_14 fw-lighter cake_grey">[[ cake.weight ]] кг</span>
+									</span>
+									<span class="d-flex align-items-center justify-content-between mt-2">
+										<span class="cake_blue fs_14">Количество</span>
+										<input type="number" min="0" :max="MaxQty" step="1"
+											class="form-control cake__textinput ms-2"
+											style="max-width: 110px"
+											:value="Qty(cake.id)"
+											@input="SetQty(cake.id, $event.target.value)"
+											@focus="SetQty(cake.id, $event.target.value || 1)">
+									</span>
+								</label>
+							</div>
+						</template>
+					</div>
+
+					<h2 class="fs_40 cake_pink mt-4 mb-3">Контактные данные</h2>
+					<div class="row">
+						{% for field in form.contact_fields %}
+						<div class="col-12 col-md-6 position-relative">
+							<label class="cake_blue mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+							{{ field }}
+							{% for error in field.errors %}
+							<small class="cake_pink d-block">{{ error }}</small>
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</div>
+
+					<h2 class="fs_40 cake_pink mt-4 mb-3">Данные для доставки</h2>
+					<div class="row">
+						{% for field in form.delivery_fields %}
+						<div class="col-12 col-md-6 position-relative">
+							<label class="cake_blue mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+							{{ field }}
+							{% for error in field.errors %}
+							<small class="cake_pink d-block">{{ error }}</small>
+							{% endfor %}
+						</div>
+						{% endfor %}
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-12 col-md-6 position-relative">
+							<label class="cake_blue mb-1" for="{{ form.delivery_comment.id_for_label }}">{{ form.delivery_comment.label }}</label>
+							{{ form.delivery_comment }}
+							{% for error in form.delivery_comment.errors %}
+							<small class="cake_pink d-block">{{ error }}</small>
+							{% endfor %}
+						</div>
+						<div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
+							<div class="position-relative">
+								<label class="cake_blue mb-1" for="{{ form.promo.id_for_label }}">{{ form.promo.label }}</label>
+								{{ form.promo }}
+								{% for error in form.promo.errors %}
+								<small class="cake_pink d-block">{{ error }}</small>
+								{% endfor %}
+							</div>
+							<span class="cake_pink fs_40 fw-bold mt-3">Итого: [[ Cost ]] ₽</span>
+							<small class="cake_grey">Скидка по промокоду применится при оплате</small>
+							<button type="submit" class="btn text-white rounded-pill mt-3 px-5 shadow-none cake__button cake__bg_pink">Оформить заказ</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	<script>
+		window.READY_CAKES = {{ cakes_json|safe }};
+		window.READY_SELECTED = {{ selected_json|safe }};
+		window.READY_MAX_QTY = {{ max_qty }};
+		window.READY_TOTAL = {{ total }};
+	</script>
+	<script src="{% static 'js/ready_cake.js' %}"></script>
+{% endblock %}

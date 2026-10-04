@@ -9,6 +9,9 @@ class Cake(models.Model):
         max_digits=5, decimal_places=2, verbose_name="Вес (кг)"
     )
     image = models.ImageField(upload_to="images/cakes", verbose_name="Картинка")
+    is_active = models.BooleanField(
+        "В наличии", default=True, help_text="Снятый с продажи торт скрыт из каталога"
+    )
 
     class Meta:
         verbose_name = "Торт"
