@@ -67,7 +67,7 @@ class Command(BaseCommand):
                     "price": cake_data["price"],
                     "weight": cake_data["weight"],
                     "image": cake_data["image"],
-                }
+                },
             )
 
             if created:
@@ -82,5 +82,3 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Создано новых: {created_count}. Обновлено существующих: {updated_count}."
         )
-
-
