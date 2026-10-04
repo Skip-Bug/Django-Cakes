@@ -270,13 +270,21 @@ class Order(models.Model):
     @property
     def options_lines(self) -> list:
         """Человекочитаемый состав торта для админки и печати."""
+        from apps.custom_cake.models import CakePartOption
+
+        text_option_ids = set(
+            CakePartOption.objects.filter(part__requires_text=True).values_list(
+                "id", flat=True
+            )
+        )
         lines = []
         for group_code, data in (self.options_snapshot or {}).items():
-            if isinstance(data, list):
-                for item in data:
-                    lines.append(f"{group_code}: {item.get('name', '')}")
-            elif isinstance(data, dict):
-                lines.append(f"{group_code}: {data.get('name', '')}")
+            items = data if isinstance(data, list) else [data]
+            for item in items:
+                value = item.get("name", "")
+                if item.get("id") in text_option_ids and self.inscription:
+                    value = self.inscription
+                lines.append(f"{group_code}: {value}")
         return lines
 
     def mark_paid(self):
