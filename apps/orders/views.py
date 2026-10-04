@@ -1,12 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.custom_cake.models import CakePartOption
 from apps.custom_cake.views import build_cake_details, build_order_prefill
-from apps.orders.forms import OrderForm
+from apps.orders.forms import OrderForm, PaymentForm
 from apps.orders.models import Order, OrderEvent, PromoCode
 from apps.orders.services import calculate_price
 
@@ -14,9 +14,17 @@ from apps.orders.services import calculate_price
 def user_orders(user):
     """Заказы пользователя: его собственные и гостевые на тот же телефон."""
     return Order.objects.filter(
-        Q(customer=user)
-        | Q(customer__isnull=True, guest_phone=str(user.phone or ""))
+        Q(customer=user) | Q(customer__isnull=True, guest_phone=str(user.phone or ""))
     )
+
+
+def find_order_for_payment(number, token):
+    """Заказ для страницы оплаты.
+
+    Номер заказа подбирается перебором, поэтому нужен ещё и секретный токен.
+    Логин не требуется: гость получает ссылку сразу после оформления.
+    """
+    return get_object_or_404(Order, number=number, payment_token=token)
 
 
 @login_required(login_url="/?reg=code")
@@ -129,9 +137,9 @@ def order_create(request):
                     author_label="" if customer else order.guest_name,
                 )
 
-            if customer:
-                return redirect("lk-order")
-            return redirect(f"/?order={order.number}")
+            return redirect(
+                "orders:pay", number=order.number, token=order.payment_token
+            )
 
     messages = [
         message for field_errors in form.errors.values() for message in field_errors
@@ -154,3 +162,46 @@ def order_create(request):
             "order_prefill": order_prefill,
         },
     )
+
+
+def payment_context(order, form):
+    return {
+        "order": order,
+        "form": form,
+        "payment_methods": Order.PAYMENT_METHOD_CHOICES,
+    }
+
+
+def payment_page(request, number, token):
+    order = find_order_for_payment(number, token)
+    form = PaymentForm(initial={"payment_method": order.payment_method})
+    return render(request, "payment.html", payment_context(order, form))
+
+
+@require_POST
+def payment_process(request, number, token):
+    order = find_order_for_payment(number, token)
+    if order.is_paid:
+        return redirect("orders:pay", number=order.number, token=order.payment_token)
+
+    form = PaymentForm(request.POST)
+    if not form.is_valid():
+        return render(request, "payment.html", payment_context(order, form), status=400)
+
+    old_status = order.payment_status
+    order.payment_method = form.cleaned_data["payment_method"]
+    # mark_paid() сохраняет только payment_status/paid_at/updated_at,
+    # поэтому способ оплаты пишем отдельным save().
+    order.save(update_fields=["payment_method", "updated_at"])
+    order.mark_paid()
+
+    OrderEvent.objects.create(
+        order=order,
+        event_type=OrderEvent.TYPE_PAYMENT,
+        from_status=old_status,
+        to_status=order.payment_status,
+        message=f"Оплата: {order.get_payment_method_display()}",
+        author=request.user if request.user.is_authenticated else None,
+        author_label="" if request.user.is_authenticated else order.guest_name,
+    )
+    return redirect("orders:pay", number=order.number, token=order.payment_token)

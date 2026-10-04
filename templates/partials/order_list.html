@@ -26,11 +26,15 @@
 									{% if order.promo_discount %}
 									<span class="cake_pink">Скидка ({{ order.promo_code }}): −{{ order.promo_discount }} ₽</span><br>
 									{% endif %}
-									<span class="cake_pink">Цена: {{ order.total }} ₽</span>
+									<span class="cake_pink">Цена: {{ order.total }} ₽</span><br>
+									<span class="cake_grey">Оплата: {{ order.get_payment_status_display }}{% if order.is_paid %} · {{ order.get_payment_method_display }}{% endif %}</span>
 								</div>
-								<div class="modal-footer d-flex justify-content-between">
+								<div class="modal-footer d-flex justify-content-between align-items-center">
 									<span class="cake_blue d-flex">Статус: {{ order.get_status_display }}</span>
 									<span class="cake_blue d-flex align-items-center">Доставка: {{ order.delivery_date|date:"d.m.Y" }} {{ order.delivery_time|time:"H:i" }}</span>
+									{% if order.is_active and not order.is_paid %}
+									<a href="{% url 'orders:pay' order.number order.payment_token %}" class="btn text-white rounded-pill px-4 shadow-none cake__button cake__bg_pink">Оплатить</a>
+									{% endif %}
 								</div>
 							</div>
 						</div>

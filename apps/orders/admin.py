@@ -34,7 +34,13 @@ class OrderAdmin(admin.ModelAdmin):
         "delivery_time",
         "is_urgent",
     )
-    list_filter = ("status", "payment_status", "is_urgent", "delivery_date")
+    list_filter = (
+        "status",
+        "payment_status",
+        "payment_method",
+        "is_urgent",
+        "delivery_date",
+    )
     search_fields = (
         "number",
         "guest_phone",
@@ -49,6 +55,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         "number",
+        "payment_token",
         "options_display",
         "customer",
         "guest_name",
@@ -72,7 +79,14 @@ class OrderAdmin(admin.ModelAdmin):
         (
             "Заказ",
             {
-                "fields": ("number", "status", "payment_status", "paid_at"),
+                "fields": (
+                    "number",
+                    "status",
+                    "payment_status",
+                    "payment_method",
+                    "payment_token",
+                    "paid_at",
+                ),
             },
         ),
         (

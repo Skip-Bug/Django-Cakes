@@ -132,3 +132,13 @@ class OrderForm(forms.ModelForm):
     def get_promo(self):
         code = (self.cleaned_data.get("promo") or "").strip()
         return code.upper()
+
+
+class PaymentForm(forms.Form):
+    """Выбор способа оплаты на странице оплаты заказа."""
+
+    payment_method = forms.ChoiceField(
+        label="Способ оплаты",
+        choices=Order.PAYMENT_METHOD_CHOICES,
+        error_messages={"invalid_choice": "Выберите способ оплаты"},
+    )
