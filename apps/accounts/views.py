@@ -1,7 +1,6 @@
 import random
 from datetime import timedelta
 
-import phonenumbers
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
@@ -10,23 +9,9 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import PhoneOTP
+from .utils import normalize_phone
 
 User = get_user_model()
-
-
-def normalize_phone(raw, region="RU"):
-    try:
-        parsed = phonenumbers.parse(raw or "", region)
-    except phonenumbers.NumberParseException:
-        return None
-    if not phonenumbers.is_valid_number(parsed):
-        return None
-    if phonenumbers.region_code_for_number(parsed) != region:
-        return None
-    return phonenumbers.format_number(
-        parsed,
-        phonenumbers.PhoneNumberFormat.E164,
-    )
 
 
 @require_POST
@@ -107,6 +92,7 @@ def check_auth(request):
             "phone": str(user.phone),
             "name": user.name,
             "email": user.email,
+            "address": user.address,
         }
     )
 
@@ -119,6 +105,7 @@ def update_profile(request):
     user = request.user
     user.name = request.POST.get("name", "").strip()
     user.email = request.POST.get("email", "").strip()
-    user.save(update_fields=["name", "email"])
+    user.address = request.POST.get("address", "").strip()
+    user.save(update_fields=["name", "email", "address"])
 
     return redirect("/lk/")

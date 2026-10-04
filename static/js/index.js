@@ -10,6 +10,12 @@ const app = Vue.createApp({
             const cakeData = JSON.parse(
                 document.getElementById("cake-data").textContent
             );
+            const orderErrors = JSON.parse(
+                document.getElementById("order-errors").textContent
+            );
+            const prefill = JSON.parse(
+                document.getElementById("order-prefill").textContent
+            );
             const selected = {};
             cakeData.parts.forEach(part => {
                 selected[part.id] = null;
@@ -88,25 +94,23 @@ const app = Vue.createApp({
                         return ' время доставки';
                     }
                 },
+            basePrice: cakeData.base_price,
+            OrderErrors: orderErrors,
             parts: cakeData.parts,
             selected: selected,
-            
-            Levels: 0,
-            Form: 0,
-            Topping: 0,
-            Berries: 0,
-            Decor: 0,
-            Words: '',
-            Comments: '',
+
+            Words: prefill.inscription || '',
+            Comments: prefill.comment || '',
             Designed: false,
 
-            Name: '',
-            Phone: null,
-            Email: null,
-            Address: null,
-            Dates: null,
-            Time: null,
-            DelivComments: ''
+            Name: prefill.guest_name || '',
+            Phone: prefill.guest_phone || null,
+            Email: prefill.guest_email || null,
+            Address: prefill.address || null,
+            Dates: prefill.delivery_date || null,
+            Time: prefill.delivery_time || null,
+            DelivComments: prefill.delivery_comment || '',
+            Promo: prefill.promo || ''
         }
     },
     methods: {
@@ -132,8 +136,26 @@ const app = Vue.createApp({
             });
             return schema;
         },
+        SelectedOptions() {
+            const ids = [];
+
+            this.parts.forEach(part => {
+                if (part.requires_text) return;
+                const selectedId = this.selected[part.id];
+                if (selectedId) ids.push(selectedId);
+            });
+
+            if (this.Words) {
+                const wordsPart = this.parts.find(p => p.requires_text);
+                if (wordsPart && wordsPart.options.length) {
+                    ids.push(wordsPart.options[0].id);
+                }
+            }
+
+            return JSON.stringify(ids);
+        },
         Cost() {
-            let cost = 0;
+            let cost = this.basePrice;
 
             this.parts.forEach(part => {
                 const selectedId = this.selected[part.id];

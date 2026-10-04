@@ -205,9 +205,6 @@ class Order(models.Model):
     # --- доставка --- выносить отдельно?
     delivery_date = models.DateField("Дата доставки", db_index=True)
     delivery_time = models.TimeField("Время доставки")
-    delivery_slot = models.CharField(
-        "Слот доставки", max_length=20, blank=True, default=""
-    )
     is_urgent = models.BooleanField("Срочный заказ", default=False)
     address_snapshot = models.JSONField("Адрес", default=dict, blank=True)
     comment = models.TextField("Комментарий к заказу", blank=True, default="")
@@ -246,7 +243,7 @@ class Order(models.Model):
     @property
     def contact_name(self) -> str:
         if self.customer:
-            return self.customer.get_full_name() or self.customer.get_username()
+            return self.customer.name or self.customer.get_username()
         return self.guest_name or self.guest_phone
 
     @property
@@ -273,17 +270,22 @@ class Order(models.Model):
     @property
     def options_lines(self) -> list:
         """Человекочитаемый состав торта для админки и печати."""
+        from apps.custom_cake.models import CakePartOption
+
+        text_option_ids = set(
+            CakePartOption.objects.filter(part__requires_text=True).values_list(
+                "id", flat=True
+            )
+        )
         lines = []
         for group_code, data in (self.options_snapshot or {}).items():
-            if isinstance(data, list):
-                for item in data:
-                    lines.append(f"{group_code}: {item.get('name', '')}")
-            elif isinstance(data, dict):
-                lines.append(f"{group_code}: {data.get('name', '')}")
+            items = data if isinstance(data, list) else [data]
+            for item in items:
+                value = item.get("name", "")
+                if item.get("id") in text_option_ids and self.inscription:
+                    value = self.inscription
+                lines.append(f"{group_code}: {value}")
         return lines
-
-    def track_url(self) -> str:
-        return f"/track/?number={self.number}"
 
     def mark_paid(self):
         if self.payment_status != self.PAYMENT_PAID:
