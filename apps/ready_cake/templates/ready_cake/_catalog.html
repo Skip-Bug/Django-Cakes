@@ -12,7 +12,10 @@
                     <p class="fs_14 fw-lighter cake_grey card-text">
                         {{ cake.description|truncatewords:15 }}
                     </p>
-                    <span class="fw-bold fs-5 cake_pink">{{ cake.price }} ₽</span>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5 cake_pink">{{ cake.price|floatformat:0 }} ₽</span>
+                        <span class="fs_14 fw-lighter cake_grey">{{ cake.weight|floatformat:1 }} кг</span>
+                    </div>
                 </div>
             </div>
         </div>

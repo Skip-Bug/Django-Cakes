@@ -7,4 +7,4 @@ register = template.Library()
 
 @register.inclusion_tag("ready_cake/_catalog.html")
 def show_catalog(limit=6):
-    return {"cakes": Cake.objects.all()}
+    return {"cakes": Cake.objects.all()[: int(limit)]}

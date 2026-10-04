@@ -13,6 +13,7 @@ class Cake(models.Model):
     class Meta:
         verbose_name = "Торт"
         verbose_name_plural = "Торты"
+        ordering = ("id",)
 
     def __str__(self):
         return self.title
