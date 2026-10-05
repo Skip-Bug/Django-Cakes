@@ -8,7 +8,14 @@ from .models import PhoneOTP, User
 class UserAdmin(BaseUserAdmin):
     readonly_fields = ("last_login",)
     ordering = ("phone",)
-    list_display = ("phone", "name", "email_display", "address", "is_staff", "is_active")
+    list_display = (
+        "phone",
+        "name",
+        "email_display",
+        "address",
+        "is_staff",
+        "is_active",
+    )
     search_fields = ("phone", "name", "email", "address")
 
     fieldsets = (
@@ -38,6 +45,10 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
 
+    @admin.display(description="Email")
+    def email_display(self, obj):
+        return obj.email or ""
+
 
 @admin.register(PhoneOTP)
 class PhoneOTPAdmin(admin.ModelAdmin):
@@ -45,8 +56,3 @@ class PhoneOTPAdmin(admin.ModelAdmin):
     list_filter = ("is_used",)
     search_fields = ("phone",)
     readonly_fields = ("created_at",)
-
-
-@admin.display(description="Email")
-def email_display(self, obj):
-    return obj.email or ""
