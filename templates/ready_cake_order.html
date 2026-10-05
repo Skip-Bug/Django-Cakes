@@ -28,19 +28,20 @@
 					<div class="row">
 						<template v-for="cake in Cakes" :key="cake.id">
 							<div class="col-12 col-sm-6 col-lg-4 mb-3">
-								<label class="cake__card p-3 d-flex flex-column position-relative w-100 h-100"
-									:class="Qty(cake.id) ? 'cake__border_blue' : ''"
-									style="max-width: none; cursor: pointer;">
-									<img :src="cake.image" :alt="cake.title"
-										class="img-fluid w-100 rounded"
-										style="aspect-ratio: 16 / 9; object-fit: cover;">
-									<span class="font_Gogh fs_24 cake_blue mt-2">{{ cake.title }}</span>
-									<span class="cake_grey fw-lighter fs_14">{{ cake.description }}</span>
-									<span class="d-flex justify-content-between align-items-center mt-2">
-										<span class="fw-bold fs_5 cake_pink">[[ cake.price ]] ₽</span>
-										<span class="fs_14 fw-lighter cake_grey">[[ cake.weight ]] кг</span>
-									</span>
-									<span class="d-flex align-items-center justify-content-between mt-2">
+								<div class="cake__card p-3 d-flex flex-column position-relative w-100 h-100"
+									:class="Qty(cake.id) ? 'cake__border_blue' : ''">
+									<label style="cursor: pointer; display: block;">
+										<img :src="cake.image" :alt="cake.title"
+											class="img-fluid w-100 rounded"
+											style="aspect-ratio: 16 / 9; object-fit: cover;">
+										<span class="font_Gogh fs_24 cake_blue mt-2">[[ cake.title ]]</span>
+										<span class="cake_grey fw-lighter fs_14">[[ cake.description ]]</span>
+										<span class="d-flex justify-content-between align-items-center mt-2">
+											<span class="fw-bold fs_5 cake_pink">[[ cake.price ]] ₽</span>
+											<span class="fs_14 fw-lighter cake_grey">[[ cake.weight ]] кг</span>
+										</span>
+									</label>
+									<div class="d-flex align-items-center justify-content-between mt-2">
 										<span class="cake_blue fs_14">Количество</span>
 										<input type="number" min="0" :max="MaxQty" step="1"
 											class="form-control cake__textinput ms-2"
@@ -48,8 +49,8 @@
 											:value="Qty(cake.id)"
 											@input="SetQty(cake.id, $event.target.value)"
 											@focus="SetQty(cake.id, $event.target.value || 1)">
-									</span>
-								</label>
+									</div>
+								</div>
 							</div>
 						</template>
 					</div>
