@@ -38,8 +38,8 @@ def build_order_prefill(user):
     if not user.is_authenticated:
         return {}
     return {
-        "guest_name": user.name,
-        "guest_email": user.email,
+        "guest_name": user.name or "",
+        "guest_email": user.email or "",
         "guest_phone": str(user.phone or ""),
         "address": user.address or "",
     }
@@ -53,5 +53,6 @@ def index(request):
             "cake_details": build_cake_details(),
             "order_errors": [],
             "order_prefill": build_order_prefill(request.user),
+            "otp_demo_code": request.session.get("otp_demo_code", ""),
         },
     )

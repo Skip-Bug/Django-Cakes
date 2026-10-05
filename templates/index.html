@@ -46,7 +46,10 @@
 							<a href="{% static 'docs/consent.pdf' %}" target="_blank" rel="noopener"
 							class="text-decoration-none cake_pink fs_12">согласием</a>.
 						</p>
-						<p v-else-if="Step === 'Code'" class="fs_12 cake_grey">Осталось времени: 05:00</p>
+						<p v-else-if="Step === 'Code'" class="fs_12 cake_grey">
+							Осталось времени: 05:00
+							{% if otp_demo_code %}<br><span class="cake_pink">Демо-код: <strong>{{ otp_demo_code }}</strong></span>{% endif %}
+						</p>
 						<a href="#" v-if="Step === 'Code'" @click.prevent="ToRegStep1" class="text-decoration-none cake_pink fs_12">изменить данные</a>
 					</div>
 				</div>

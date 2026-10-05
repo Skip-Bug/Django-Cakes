@@ -1,3 +1,4 @@
+import logging
 import random
 from datetime import timedelta
 
@@ -9,9 +10,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import PhoneOTP
+from .sms import send_otp
 from .utils import normalize_phone
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 @require_POST
@@ -31,11 +34,15 @@ def request_code(request):
         expires_at=timezone.now() + timedelta(minutes=5),
     )
 
-    # TODO: заменить на реального SMS-провайдера.
-    if settings.DEBUG:
-        print(f"[SMS] {phone}: {code}")
+    sent = send_otp(phone, code)
+    if not sent:
+        logger.warning("OTP для %s не отправлен через SMS.ru", phone)
 
     request.session["otp_phone"] = phone
+
+    if settings.OTP_DEMO_MODE:
+        request.session["otp_demo_code"] = code
+
     return redirect("/?reg=code")
 
 
@@ -66,11 +73,12 @@ def verify_code(request):
     otp.is_used = True
     otp.save(update_fields=["is_used"])
 
-    user, created = User.objects.get_or_create(phone=phone)
+    user, created = User.objects.get_or_create(phone=phone, defaults={"email": None},)
     if created:
         user.set_unusable_password()
         user.save()
 
+    request.session.pop("otp_demo_code", None)
     login(request, user)
 
     return redirect("/lk/")
@@ -104,7 +112,8 @@ def update_profile(request):
 
     user = request.user
     user.name = request.POST.get("name", "").strip()
-    user.email = request.POST.get("email", "").strip()
+    email = request.POST.get("email", "").strip()
+    user.email = email or None
     user.address = request.POST.get("address", "").strip()
     user.save(update_fields=["name", "email", "address"])
 
