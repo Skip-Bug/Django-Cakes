@@ -155,12 +155,19 @@ def create_order(request):
                 form.add_error("options", f"Выберите вариант: {part_name}")
 
     if form.is_valid() and (options or base_cake):
-        if base_cake:
-            priced = calculate_price(options, base_price=base_cake.price, is_urgent=form.is_urgent())
+        if base_cake and not options:
+            priced = calculate_price(
+                [], ready_cake=base_cake, is_urgent=form.is_urgent()
+            )
+        elif base_cake:
+            priced = calculate_price(
+                options, base_price=base_cake.price, is_urgent=form.is_urgent()
+            )
         else:
             priced = calculate_price(options, is_urgent=form.is_urgent())
+
         order = Order(**priced, **order_delivery_kwargs(request, form))
-        
+
         if place_order(form, order):
             return redirect(
                 "orders:pay", number=order.number, token=order.payment_token

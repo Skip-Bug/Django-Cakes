@@ -2,13 +2,20 @@
     {% for cake in cakes %}
         <div class="col-12 col-sm-6 col-lg-4 mb-5">
             <div class="card border-0 h-100 position-relative overflow-hidden">
-                <a href="#" @click.prevent="selectCake({id: {{ cake.pk }}, price: {{ cake.price }}})" class="position-absolute top-0 start-0 w-100 h-100"
-                   aria-label="Заказать торт {{ cake.title }}"></a>
+                <a href="#Create_cake"
+                   data-cake-id="{{ cake.pk }}"
+                   data-cake-price="{{ cake.price }}"
+                   data-allowed-parts="{% for p in cake.restricted_parts.all %}{{ p.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                   @click.prevent="selectCake($event)"
+                   class="position-absolute top-0 start-0 w-100 h-100"
+                   aria-label="Настроить торт {{ cake.title }}"></a>
+
                 <img src="{{ cake.image.url }}"
                      alt="{{ cake.title }} - {{ cake.description|truncatewords:8 }}"
                      class="card-img-top img-fluid w-100"
                      style="aspect-ratio: 16 / 9; object-fit: cover;">
-                <div class="card-body p-4">
+
+                <div class="card-body p-4 position-relative" style="z-index: 2;">
                     <h5 class="font_Gogh fs_24 cake_blue card-title">{{ cake.title }}</h5>
                     <p class="fs_14 fw-lighter cake_grey card-text">
                         {{ cake.description|truncatewords:15 }}
@@ -18,7 +25,10 @@
                         <span class="fs_14 fw-lighter cake_grey">{{ cake.weight|floatformat:1 }} кг</span>
                     </div>
                     <span class="btn align-self-start px-4 mt-3 text-white rounded-pill shadow-none cake__button cake__bg_pink cake__select"
-                        @click.prevent="selectCake({ id: {{ cake.pk }}, price: {{ cake.price }}})">Заказать
+                          data-cake-id="{{ cake.pk }}"
+                          data-cake-price="{{ cake.price }}"
+                          @click.prevent.stop="orderCake($event)">
+                        Заказать
                     </span>
                 </div>
             </div>

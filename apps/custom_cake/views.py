@@ -1,7 +1,5 @@
 from django.shortcuts import render
 
-from apps.ready_cake.models import Cake
-
 from .models import CakePart
 from .pricing import BASE_PRICE
 
@@ -55,6 +53,5 @@ def index(request):
             "cake_details": build_cake_details(),
             "order_errors": [],
             "order_prefill": build_order_prefill(request.user),
-            "cakes": Cake.objects.filter(is_active=True),
         },
     )

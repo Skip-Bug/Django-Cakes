@@ -16,9 +16,6 @@ const app = Vue.createApp({
             const prefill = JSON.parse(
                 document.getElementById("order-prefill").textContent
             );
-            const cakes = JSON.parse(
-                document.getElementById("cakes-data").textContent
-            );
             const selected = {};
             cakeData.parts.forEach(part => {
                 selected[part.id] = null;
@@ -101,8 +98,6 @@ const app = Vue.createApp({
             OrderErrors: orderErrors,
             parts: cakeData.parts,
             selected: selected,
-            
-            cakes: cakes,
             baseCake: null,            
 
             Words: prefill.inscription || '',
@@ -124,18 +119,59 @@ const app = Vue.createApp({
             const opt = part.options.find(o => o.id === id);
             return opt ? opt.name : '—';
         },
-        selectCake(cake) {
-            this.baseCake = cake;
+
+        selectCake(event) {
+            const el = event.currentTarget;
+            const allowedRaw = el.dataset.allowedParts || '';
+            const allowedParts = allowedRaw
+                ? allowedRaw.split(',').map(Number)
+                : null;
+
+            this.baseCake = {
+                id: Number(el.dataset.cakeId),
+                price: Number(el.dataset.cakePrice),
+                allowedParts: allowedParts,   
+            };
+
+
+            this.parts.forEach(part => { this.selected[part.id] = null; });
+            this.Words = '';
+            this.Comments = '';
+            this.Designed = false;
+
+            this.$nextTick(() => {
+                document.querySelector('#Create_cake')?.scrollIntoView({ behavior: 'smooth' });
+            });
         },
+
+        orderCake(event) {
+            const el = event.currentTarget;
+            
+            this.parts.forEach(part => { this.selected[part.id] = null; });
+            this.Words = '';
+            this.Comments = '';
+
+            this.baseCake = {
+                id: Number(el.dataset.cakeId),
+                price: Number(el.dataset.cakePrice),
+                allowedParts: null,
+            };
+
+            this.Designed = true;
+            this.$nextTick(() => {
+                document.querySelector('#Payment')?.scrollIntoView({ behavior: 'smooth' });
+            });
+        },
+
         ToPayment() {
-            this.Designed = true
+            this.Designed = true;
             setTimeout(() => this.$refs.ToPayment.click(), 0);
         }
     },
     computed: {
         schema1() {
             const schema = {};
-            this.parts.forEach(part => {
+            this.availableParts.forEach(part => {
                 if (part.required) {
                     schema['part_' + part.id] = (value) => {
                         if (value) return true;
@@ -145,17 +181,22 @@ const app = Vue.createApp({
             });
             return schema;
         },
+        availableParts() {
+            const allowed = this.baseCake && this.baseCake.allowedParts;
+            if (!allowed || !allowed.length) return this.parts;
+            return this.parts.filter(p => allowed.includes(p.id));
+        },
         SelectedOptions() {
             const ids = [];
 
-            this.parts.forEach(part => {
+            this.availableParts.forEach(part => {
                 if (part.requires_text) return;
                 const selectedId = this.selected[part.id];
                 if (selectedId) ids.push(selectedId);
             });
 
             if (this.Words) {
-                const wordsPart = this.parts.find(p => p.requires_text);
+                const wordsPart = this.availableParts.find(p => p.requires_text);
                 if (wordsPart && wordsPart.options.length) {
                     ids.push(wordsPart.options[0].id);
                 }
@@ -166,7 +207,7 @@ const app = Vue.createApp({
         Cost() {
             let cost = this.baseCake ? this.baseCake.price : 0;
 
-            this.parts.forEach(part => {
+            this.availableParts.forEach(part => {
                 const selectedId = this.selected[part.id];
                 if (!selectedId) return;
                 const opt = part.options.find(o => o.id === selectedId);
@@ -174,14 +215,14 @@ const app = Vue.createApp({
             });
 
             if (this.Words) {
-                const wordsPart = this.parts.find(p => p.requires_text);
+                const wordsPart = this.availableParts.find(p => p.requires_text);
                 if (wordsPart && wordsPart.options.length) {
                     cost += wordsPart.options[0].price;
                 }
             }
 
             return cost;
-        }
+        },
     }
     
 })

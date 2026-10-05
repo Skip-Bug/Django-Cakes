@@ -12,6 +12,7 @@ from apps.orders.services import URGENCY_LEAD_HOURS
 class OrderForm(forms.ModelForm):
     options = forms.JSONField(
         label="Комплектация",
+        required=False,
         error_messages={
             "invalid_json": "Не удалось прочитать выбранные опции",
             "required": "Выберите комплектацию торта",
@@ -78,7 +79,7 @@ class OrderForm(forms.ModelForm):
 
     def clean_options(self):
         """Ожидаем список id выбранных опций: [12, 14, 31]."""
-        value = self.cleaned_data["options"]
+        value = self.cleaned_data["options"] or []
         if not isinstance(value, list):
             raise ValidationError("Ожидался список выбранных опций")
         ids = []
@@ -86,8 +87,6 @@ class OrderForm(forms.ModelForm):
             if not isinstance(item, int) or isinstance(item, bool):
                 raise ValidationError("Некорректный идентификатор опции")
             ids.append(item)
-        if not ids:
-            raise ValidationError("Выберите комплектацию торта")
         return ids
 
     def clean_guest_phone(self):
