@@ -40,7 +40,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     phone = PhoneNumberField("Телефон", unique=True)
     name = models.CharField("Имя", max_length=150, blank=True)
-    email = models.EmailField("Email", unique=True, blank=True)
+    email = models.EmailField("Email", unique=True, blank=True, null=True)
     address = models.TextField("Адрес", max_length=300, blank=True, default="")
 
     is_active = models.BooleanField("Активен", default=True)
