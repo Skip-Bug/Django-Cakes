@@ -11,6 +11,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = env.str("SECRET_KEY")
 JIVOSITE_WIDGET_ID = env.str("JIVOSITE_WIDGET_ID", "")
+SMSRU_API_ID = env.str('SMSRU_API_ID', '')
+SMSRU_FROM = env.str('SMSRU_FROM', '')
+SMSRU_TIMEOUT = env.int('SMS_TIMEOUT', 10)
+OTP_LOG_TO_CONSOLE = env.bool("OTP_LOG_TO_CONSOLE", default=DEBUG)
 
 DEBUG = True
 
