@@ -12,7 +12,7 @@
 			<div class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" id="LK"
 				data-name="{{ user.name }}"
 				data-phone="{{ user.phone }}"
-				data-email="{{ user.email }}"
+				data-email="{{ user.email|default:'' }}"
 				data-address="{{ user.address }}"
 				>
 				<form class="d-none" method="post" action="{% url 'profile' %}">
