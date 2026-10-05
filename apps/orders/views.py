@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
@@ -8,14 +6,9 @@ from django.views.decorators.http import require_POST
 
 from apps.custom_cake.models import CakePartOption
 from apps.custom_cake.views import build_cake_details, build_order_prefill
-from apps.orders.forms import (
-    MAX_CAKE_QTY,
-    OrderForm,
-    PaymentForm,
-    ReadyCakeOrderForm,
-)
+from apps.orders.forms import OrderForm, PaymentForm
 from apps.orders.models import Order, OrderEvent, PromoCode
-from apps.orders.services import calculate_price, price_ready_cakes
+from apps.orders.services import calculate_price
 from apps.ready_cake.models import Cake
 
 
@@ -139,24 +132,35 @@ def place_order(form, order):
 
 
 @require_POST
-def order_create(request):
+def create_order(request):
+    """Создает заказ"""
     form = OrderForm(request.POST, user=request.user)
     options = []
+    base_cake = None
 
     if form.is_valid():
+        base_cake_id = form.cleaned_data.get("base_cake")
+        if base_cake_id:
+            base_cake = get_object_or_404(Cake, pk=base_cake_id, is_active=True)
+
         options, missing = resolve_options(form.cleaned_data["options"])
         if missing:
             form.add_error("options", "Некоторые опции больше недоступны")
+        elif not options and base_cake:
+            pass
         elif not options:
             form.add_error("options", "Выберите комплектацию торта")
         else:
             for part_name in missing_required_parts(options):
                 form.add_error("options", f"Выберите вариант: {part_name}")
 
-    if form.is_valid() and options:
-        priced = calculate_price(options, is_urgent=form.is_urgent())
+    if form.is_valid() and (options or base_cake):
+        if base_cake:
+            priced = calculate_price(options, base_price=base_cake.price, is_urgent=form.is_urgent())
+        else:
+            priced = calculate_price(options, is_urgent=form.is_urgent())
         order = Order(**priced, **order_delivery_kwargs(request, form))
-
+        
         if place_order(form, order):
             return redirect(
                 "orders:pay", number=order.number, token=order.payment_token
@@ -169,7 +173,7 @@ def order_create(request):
     posted = {
         key: value
         for key, value in form.data.items()
-        if key not in ("csrfmiddlewaretoken", "options") and value
+        if key not in ("csrfmiddlewaretoken", "options", "base_cake") and value
     }
     order_prefill = {**build_order_prefill(request.user), **posted}
 
@@ -181,116 +185,6 @@ def order_create(request):
             "form": form,
             "order_errors": list(dict.fromkeys(messages)),
             "order_prefill": order_prefill,
-        },
-    )
-
-
-def _positive_int(value, default):
-    """Положительное целое из query-параметра, иначе значение по умолчанию."""
-    try:
-        number = int(value)
-    except (TypeError, ValueError):
-        return default
-    return number if 1 <= number <= MAX_CAKE_QTY else default
-
-
-def selected_quantities(request):
-    """Отмеченные торты и их количества: {id торта: количество}.
-
-    POST разбираем всегда, даже с ошибками валидации, чтобы клиент не терял
-    выбор. GET используется для перехода из каталога (?cake=<id>&qty=<n>).
-    """
-    if request.method == "POST":
-        raw = request.POST.get("cakes")
-        try:
-            parsed = json.loads(raw) if raw else []
-        except (TypeError, ValueError):
-            return {}
-        if not isinstance(parsed, list):
-            return {}
-        return {
-            item["id"]: _positive_int(item.get("qty"), 0)
-            for item in parsed
-            if isinstance(item, dict)
-            and isinstance(item.get("id"), int)
-            and not isinstance(item.get("id"), bool)
-        }
-
-    cake_id = (
-        int(request.GET["cake"]) if request.GET.get("cake", "").isdigit() else None
-    )
-    if cake_id is None or not Cake.objects.filter(pk=cake_id, is_active=True).exists():
-        return {}
-    return {cake_id: _positive_int(request.GET.get("qty"), 1)}
-
-
-def ready_cakes_total(items):
-    """Сумма готовых тортов для показа на странице оформления."""
-    return sum(int(cake.price) * qty for cake, qty in items)
-
-
-def ready_order_create(request):
-    """Оформление заказа готовых тортов из каталога, без конфигурации."""
-    form = ReadyCakeOrderForm(
-        request.POST or None,
-        user=request.user,
-        initial=None if request.method == "POST" else build_order_prefill(request.user),
-    )
-    cakes = list(Cake.objects.filter(is_active=True))
-
-    if request.method == "POST" and form.is_valid():
-        order = Order(
-            **price_ready_cakes(form.cleaned_data["cakes"]),
-            **order_delivery_kwargs(request, form),
-        )
-
-        if place_order(form, order):
-            return redirect(
-                "orders:pay", number=order.number, token=order.payment_token
-            )
-
-    messages = [
-        message for field_errors in form.errors.values() for message in field_errors
-    ]
-    posted = {
-        key: value
-        for key, value in form.data.items()
-        if key not in ("csrfmiddlewaretoken", "options") and value
-    }
-
-    # При ошибке показываем то, что клиент уже выбрал, чтобы не начинать заново.
-    selected = selected_quantities(request)
-    items = [
-        (cake, selected.get(cake.pk, 0)) for cake in cakes if selected.get(cake.pk)
-    ]
-
-    return render(
-        request,
-        "ready_cake_order.html",
-        {
-            "cakes": cakes,
-            "cakes_json": json.dumps(
-                [
-                    {
-                        "id": cake.pk,
-                        "title": cake.title,
-                        "price": int(cake.price),
-                        "weight": float(cake.weight) if cake.weight is not None else 0,
-                        "description": cake.description,
-                        "image": cake.image.url,
-                    }
-                    for cake in cakes
-                ],
-                ensure_ascii=False,
-            ),
-            "selected_json": json.dumps(
-                {str(cake.pk): qty for cake, qty in items}, ensure_ascii=False
-            ),
-            "max_qty": MAX_CAKE_QTY,
-            "total": ready_cakes_total(items),
-            "form": form,
-            "order_errors": list(dict.fromkeys(messages)),
-            "order_prefill": {**build_order_prefill(request.user), **posted},
         },
     )
 
@@ -331,7 +225,7 @@ def payment_process(request, number, token):
         event_type=OrderEvent.TYPE_PAYMENT,
         from_status=old_status,
         to_status=order.payment_status,
-        message=f"Оплата: {order.get_payment_method_display()}",
+        message=f"Оплата: {order.get_payment_method_display()}",  # type: ignore
         author=request.user if request.user.is_authenticated else None,
         author_label="" if request.user.is_authenticated else order.guest_name,
     )
