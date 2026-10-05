@@ -23,6 +23,10 @@ def _log_otp(phone: str, code: str, reason: str) -> None:
 
 
 def send_otp(phone: str, code: str) -> bool:
+    if settings.OTP_DEMO_MODE:
+        _log_otp(phone, code, "demo-mode")
+        return True
+
     api_id = settings.SMSRU_API_ID
 
     if not api_id:

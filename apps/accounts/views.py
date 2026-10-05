@@ -2,6 +2,7 @@ import logging
 import random
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -38,6 +39,10 @@ def request_code(request):
         logger.warning("OTP для %s не отправлен через SMS.ru", phone)
 
     request.session["otp_phone"] = phone
+
+    if settings.OTP_DEMO_MODE:
+        request.session["otp_demo_code"] = code
+
     return redirect("/?reg=code")
 
 
@@ -73,6 +78,7 @@ def verify_code(request):
         user.set_unusable_password()
         user.save()
 
+    request.session.pop("otp_demo_code", None)
     login(request, user)
 
     return redirect("/lk/")
