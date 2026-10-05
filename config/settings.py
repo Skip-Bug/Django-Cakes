@@ -11,10 +11,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = env.str("SECRET_KEY")
 JIVOSITE_WIDGET_ID = env.str("JIVOSITE_WIDGET_ID", "")
-DEBUG = env.bool("DEBUG", default=True)
+DEBUG = env.bool("DEBUG", default=False)
 SMSRU_API_ID = env.str("SMSRU_API_ID", "")
 SMSRU_FROM = env.str("SMSRU_FROM", "")
-SMSRU_TIMEOUT = env.int("SMSRU_TIMEOUT", 10)
+SMSRU_TIMEOUT = env.int("SMS_TIMEOUT", 10)
 OTP_LOG_TO_CONSOLE = env.bool("OTP_LOG_TO_CONSOLE", default=DEBUG)
 OTP_DEMO_MODE = env.bool("OTP_DEMO_MODE", default=False)
 
@@ -90,10 +90,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LANGUAGE_CODE = "ru-RU"
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
