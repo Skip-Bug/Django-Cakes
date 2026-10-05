@@ -127,7 +127,6 @@ class OrderAdmin(admin.ModelAdmin):
                     "promo",
                     "promo_code",
                     "promo_discount",
-                    "discount",
                     "total",
                     "urgency_surcharge",
                 ),
