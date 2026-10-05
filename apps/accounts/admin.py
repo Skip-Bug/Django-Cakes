@@ -38,6 +38,10 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
 
+    @admin.display(description="Email")
+    def email_display(self, obj):
+        return obj.email or ""
+
 
 @admin.register(PhoneOTP)
 class PhoneOTPAdmin(admin.ModelAdmin):
@@ -45,8 +49,3 @@ class PhoneOTPAdmin(admin.ModelAdmin):
     list_filter = ("is_used",)
     search_fields = ("phone",)
     readonly_fields = ("created_at",)
-
-
-@admin.display(description="Email")
-def email_display(self, obj):
-    return obj.email or ""
