@@ -7,11 +7,6 @@ from django.utils import timezone
 from apps.accounts.utils import normalize_phone
 from apps.orders.models import Order
 from apps.orders.services import URGENCY_LEAD_HOURS
-from apps.ready_cake.models import Cake
-
-# Ограничения на заказ готовых тортов.
-MAX_CAKES_PER_ORDER = 10
-MAX_CAKE_QTY = 20
 
 
 class OrderForm(forms.ModelForm):
@@ -23,6 +18,7 @@ class OrderForm(forms.ModelForm):
         },
     )
     promo = forms.CharField(label="Промокод", required=False, max_length=50)
+    base_cake = forms.IntegerField(label="Base cake", required=False)
     address = forms.CharField(
         label="Адрес",
         max_length=300,
@@ -137,84 +133,6 @@ class OrderForm(forms.ModelForm):
     def get_promo(self):
         code = (self.cleaned_data.get("promo") or "").strip()
         return code.upper()
-
-
-class ReadyCakeOrderForm(OrderForm):
-    """Готовые торты из каталога: доставка и промокод, без комплектации.
-
-    Наследует валидацию телефона, даты доставки и префилл из профиля —
-    убираются только комплектация и надпись. Торты выбираются полем cakes:
-    [{"id": 3, "qty": 2}, {"id": 7, "qty": 1}], где qty — целое >= 1.
-    """
-
-    cakes = forms.JSONField(
-        label="Торты",
-        error_messages={
-            "invalid_json": "Не удалось прочитать список тортов",
-            "required": "Выберите хотя бы один торт",
-        },
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        del self.fields["options"]
-        del self.fields["inscription"]
-        # cakes — невидимое поле: список тортов собирает JS из формы ниже.
-        self.fields["cakes"].widget = forms.HiddenInput()
-        for field in self.fields.values():
-            if field is self.fields["cakes"]:
-                continue
-            css = field.widget.attrs.get("class") or "form-control"
-            field.widget.attrs["class"] = f"{css} cake__textinput"
-
-    @property
-    def contact_fields(self):
-        return [self[name] for name in ("guest_name", "guest_phone", "guest_email")]
-
-    @property
-    def delivery_fields(self):
-        return [self[name] for name in ("address", "delivery_date", "delivery_time")]
-
-    def clean_cakes(self):
-        """Проверяет список тортов и возвращает [(Cake, qty), ...].
-
-        Цены берутся из справочника на сервере: значения из поля не доверяем.
-        """
-        value = self.cleaned_data["cakes"]
-        if not isinstance(value, list):
-            raise ValidationError("Ожидался список тортов")
-
-        chosen = {}
-        for item in value:
-            if not isinstance(item, dict):
-                raise ValidationError("Некорректный формат позиции")
-            cake_id = item.get("id")
-            qty = item.get("qty", 1)
-            if not isinstance(cake_id, int) or isinstance(cake_id, bool):
-                raise ValidationError("Некорректный идентификатор торта")
-            if not isinstance(qty, int) or isinstance(qty, bool):
-                raise ValidationError("Количество должно быть целым числом")
-            if not 1 <= qty <= MAX_CAKE_QTY:
-                raise ValidationError(
-                    f"Количество одного торта — от 1 до {MAX_CAKE_QTY}"
-                )
-            if cake_id in chosen:
-                raise ValidationError("Один торт указан дважды")
-            chosen[cake_id] = qty
-
-        if not chosen:
-            raise ValidationError("Выберите хотя бы один торт")
-        if len(chosen) > MAX_CAKES_PER_ORDER:
-            raise ValidationError(f"Не больше {MAX_CAKES_PER_ORDER} позиций в заказе")
-
-        cakes = {
-            cake.id: cake for cake in Cake.objects.filter(id__in=chosen, is_active=True)
-        }
-        missing = sorted(set(chosen) - set(cakes))
-        if missing:
-            raise ValidationError("Некоторые торты больше недоступны")
-
-        return [(cakes[cake_id], qty) for cake_id, qty in chosen.items()]
 
 
 class PaymentForm(forms.Form):
