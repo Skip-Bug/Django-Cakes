@@ -2,12 +2,12 @@ import logging
 import random
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.conf import settings
 
 from .models import PhoneOTP
 from .sms import send_otp
