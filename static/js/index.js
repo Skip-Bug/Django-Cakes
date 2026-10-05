@@ -16,6 +16,8 @@ const app = Vue.createApp({
             const prefill = JSON.parse(
                 document.getElementById("order-prefill").textContent
             );
+                document.getElementById("cakes-data").textContent
+            );
             const selected = {};
             cakeData.parts.forEach(part => {
                 selected[part.id] = null;
@@ -98,6 +100,9 @@ const app = Vue.createApp({
             OrderErrors: orderErrors,
             parts: cakeData.parts,
             selected: selected,
+            
+            cakes: cakes,
+            baseCake: null,            
 
             Words: prefill.inscription || '',
             Comments: prefill.comment || '',
@@ -117,6 +122,9 @@ const app = Vue.createApp({
         optionName(part, id) {
             const opt = part.options.find(o => o.id === id);
             return opt ? opt.name : '—';
+        },
+        selectCake(cake) {
+            this.baseCake = cake;
         },
         ToPayment() {
             this.Designed = true
@@ -155,12 +163,11 @@ const app = Vue.createApp({
             return JSON.stringify(ids);
         },
         Cost() {
-            let cost = this.basePrice;
+            let cost = this.baseCake ? this.baseCake.price : 0;
 
             this.parts.forEach(part => {
                 const selectedId = this.selected[part.id];
                 if (!selectedId) return;
-
                 const opt = part.options.find(o => o.id === selectedId);
                 if (opt) cost += opt.price;
             });

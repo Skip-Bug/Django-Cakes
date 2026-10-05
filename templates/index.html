@@ -112,7 +112,16 @@
 		{{ cake_details|json_script:"cake-data" }}
 		{{ order_errors|json_script:"order-errors" }}
 		{{ order_prefill|json_script:"order-prefill" }}
+		{{ cakes|json_script:"cakes-data" }}
 		<article id="VueApp">
+			<section class="row pt-header" id="SelectBaseCake">
+				<h2 class="font_Gogh fs_40 cake_blue text-center mb-3">Выберите торт</h2>
+				<p class="cake_grey text-center mb-4">Или кастомизируйте его по вашему вкусу</p>
+				
+				<div class="row" id="base-cake-options">
+					{% show_catalog %}
+				</div>
+			</section>
 			<section class="row pt-header" id="Create_cake">
 				<h2 class="font_Gogh fs_40 cake_blue text-center">Создать свой торт</h2>
 				<v-form :validation-schema="schema1" @submit="ToPayment">
@@ -189,6 +198,7 @@
 			<section class="row pt-header" id="Payment" v-if="Designed">
 				<form class="d-none" method="post" action="{% url 'orders:create' %}">
 					{% csrf_token %}
+					<input type="hidden" name="base_cake" :value="baseCake ? baseCake.id : ''">
 					<input type="hidden" name="options" :value="SelectedOptions">
 
 					<input v-model="Words" type="text" name="inscription">
