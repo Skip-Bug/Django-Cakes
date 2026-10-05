@@ -16,6 +16,7 @@ const app = Vue.createApp({
             const prefill = JSON.parse(
                 document.getElementById("order-prefill").textContent
             );
+            const cakes = JSON.parse(
                 document.getElementById("cakes-data").textContent
             );
             const selected = {};
