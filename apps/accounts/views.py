@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.conf import settings
 
 from .models import PhoneOTP
 from .sms import send_otp
@@ -38,6 +39,10 @@ def request_code(request):
         logger.warning("OTP для %s не отправлен через SMS.ru", phone)
 
     request.session["otp_phone"] = phone
+
+    if settings.OTP_DEMO_MODE:
+        request.session["otp_demo_code"] = code
+
     return redirect("/?reg=code")
 
 
@@ -73,6 +78,7 @@ def verify_code(request):
         user.set_unusable_password()
         user.save()
 
+    request.session.pop("otp_demo_code", None)
     login(request, user)
 
     return redirect("/lk/")

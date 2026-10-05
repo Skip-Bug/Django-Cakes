@@ -53,5 +53,6 @@ def index(request):
             "cake_details": build_cake_details(),
             "order_errors": [],
             "order_prefill": build_order_prefill(request.user),
+            "otp_demo_code": request.session.get("otp_demo_code", ""),
         },
     )

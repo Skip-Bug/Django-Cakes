@@ -16,6 +16,7 @@ SMSRU_API_ID = env.str('SMSRU_API_ID', '')
 SMSRU_FROM = env.str('SMSRU_FROM', '')
 SMSRU_TIMEOUT = env.int('SMS_TIMEOUT', 10)
 OTP_LOG_TO_CONSOLE = env.bool("OTP_LOG_TO_CONSOLE", default=DEBUG)
+OTP_DEMO_MODE = env.bool("OTP_DEMO_MODE", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
