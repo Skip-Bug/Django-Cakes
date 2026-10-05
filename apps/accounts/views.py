@@ -73,7 +73,7 @@ def verify_code(request):
     otp.is_used = True
     otp.save(update_fields=["is_used"])
 
-    user, created = User.objects.get_or_create(phone=phone)
+    user, created = User.objects.get_or_create(phone=phone, defaults={"email": None},)
     if created:
         user.set_unusable_password()
         user.save()
@@ -112,7 +112,8 @@ def update_profile(request):
 
     user = request.user
     user.name = request.POST.get("name", "").strip()
-    user.email = request.POST.get("email", "").strip()
+    email = request.POST.get("email", "").strip()
+    user.email = email or None
     user.address = request.POST.get("address", "").strip()
     user.save(update_fields=["name", "email", "address"])
 
