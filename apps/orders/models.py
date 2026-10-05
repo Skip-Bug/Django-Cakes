@@ -4,7 +4,12 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-from apps.orders.utils import make_order_number
+from apps.orders.utils import make_order_number, make_payment_token
+
+# Ключ снимка, под которым лежат готовые торты из каталога.
+# Такой заказ отличается от заказа своего торта только этим ключом:
+# конфигурации у готового торта нет, а цена целиком в options_total.
+READY_PART_NAME = "Готовый торт"
 
 
 class PromoCode(models.Model):
@@ -148,6 +153,14 @@ class Order(models.Model):
         (PAYMENT_REFUNDED, "Возврат"),
     ]
 
+    PAYMENT_METHOD_CARD = "CARD"
+    PAYMENT_METHOD_CASH = "CASH"
+
+    PAYMENT_METHOD_CHOICES = [
+        (PAYMENT_METHOD_CARD, "Банковской картой онлайн"),
+        (PAYMENT_METHOD_CASH, "Наличными ..."),
+    ]
+
     number = models.CharField("Номер", max_length=20, unique=True)
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -172,6 +185,15 @@ class Order(models.Model):
     )
     payment_status = models.CharField(
         "Оплата", max_length=12, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_PENDING
+    )
+    payment_method = models.CharField(
+        "Способ оплаты",
+        max_length=8,
+        choices=PAYMENT_METHOD_CHOICES,
+        default=PAYMENT_METHOD_CARD,
+    )
+    payment_token = models.CharField(
+        "Токен оплаты", max_length=32, blank=True, default="", db_index=True
     )
 
     # --- конфигурация торта (снимок) ---
@@ -231,6 +253,8 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if not self.number:
             self.number = make_order_number()
+        if not self.payment_token:
+            self.payment_token = make_payment_token()
         super().save(*args, **kwargs)
 
     # --- вычисляемое ---
@@ -267,24 +291,66 @@ class Order(models.Model):
         parts = [addr.get("city", ""), addr.get("street", "")]
         return ", ".join(p for p in parts if p)
 
+    def _snapshot_items(self):
+        """Пары (часть, опция) из снимка конфигурации."""
+        for part_name, data in (self.options_snapshot or {}).items():
+            for item in data if isinstance(data, list) else [data]:
+                yield part_name, item
+
     @property
-    def options_lines(self) -> list:
-        """Человекочитаемый состав торта для админки и печати."""
+    def is_ready_cake_order(self) -> bool:
+        """Заказ готовых тортов из каталога, а не торта своей конфигурации."""
+        return READY_PART_NAME in (self.options_snapshot or {})
+
+    @staticmethod
+    def _text_option_ids() -> set:
+        """id опций, для которых в заказе хранится надпись, а не название."""
         from apps.custom_cake.models import CakePartOption
 
-        text_option_ids = set(
+        return set(
             CakePartOption.objects.filter(part__requires_text=True).values_list(
                 "id", flat=True
             )
         )
-        lines = []
-        for group_code, data in (self.options_snapshot or {}).items():
-            items = data if isinstance(data, list) else [data]
-            for item in items:
-                value = item.get("name", "")
-                if item.get("id") in text_option_ids and self.inscription:
-                    value = self.inscription
-                lines.append(f"{group_code}: {value}")
+
+    @property
+    def options_lines(self) -> list:
+        """Человекочитаемый состав торта для админки и печати."""
+        return [f"{name}: {label}" for name, label, _ in self._labelled_items()]
+
+    def _labelled_items(self):
+        """Тройки (часть, подпись, цена позиции) из снимка.
+
+        Подпись учитывает надпись и количество: «Медовик ×3»,
+        цена — итог за количество, а не за штуку.
+        """
+        # У готовых тортов id торта и id текстовой опции — из разных таблиц,
+        # сверять их нельзя: сверка только для заказа своей конфигурации.
+        text_option_ids = set() if self.is_ready_cake_order else self._text_option_ids()
+        for part_name, item in self._snapshot_items():
+            value = item.get("name", "")
+            if item.get("id") in text_option_ids and self.inscription:
+                value = self.inscription
+            qty = item.get("qty", 1)
+            if qty > 1:
+                value = f"{value} ×{qty}"
+            yield part_name, value, item.get("price", 0) * qty
+
+    @property
+    def priced_lines(self) -> list:
+        """Состав заказа с ценами для страницы оплаты.
+
+        Возвращает [{"label": "Ягоды: Клубника", "price": 500}, ...],
+        сумма цен равна subtotal.
+        """
+        # У готового торта нет конфигурации: база нулевая, строка была бы шумом.
+        lines = (
+            []
+            if self.is_ready_cake_order
+            else [{"label": "Торт", "price": self.base_price}]
+        )
+        for part_name, label, price in self._labelled_items():
+            lines.append({"label": f"{part_name}: {label}", "price": price})
         return lines
 
     def mark_paid(self):

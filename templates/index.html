@@ -75,16 +75,6 @@
 			</div> -->
 		</article>
 
-		<article class="row pt-header d-flex justify-content-center" id="Catalog">
-			<h2 class="font_Gogh fs_40 cake_blue text-center mb-3">По любому поводу</h2>
-
-   			{% show_catalog %}
-
-			<div class="d-flex justify-content-center mt-2">
-				<button class="btn text-white rounded-pill shadow-none cake__button cake__bg_pink">Открыть каталог</button>
-			</div>
-		</article>
-
 		<article class="row pt-header text-center d-flex justify-content-center">
 			<h2 class="font_Gogh fs_40 cake_blue text-center mb-5">Оплата и доставка</h2>
 			<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
@@ -116,18 +106,26 @@
 		{{ order_errors|json_script:"order-errors" }}
 		{{ order_prefill|json_script:"order-prefill" }}
 		<article id="VueApp">
+			<section class="row pt-header" id="SelectBaseCake">
+				<h2 class="font_Gogh fs_40 cake_blue text-center mb-3">Выберите торт</h2>
+				<p class="cake_grey text-center mb-4">Или кастомизируйте его по вашему вкусу</p>
+				
+				<div class="row" id="base-cake-options">
+					{% show_catalog %}
+				</div>
+			</section>
 			<section class="row pt-header" id="Create_cake">
 				<h2 class="font_Gogh fs_40 cake_blue text-center">Создать свой торт</h2>
 				<v-form :validation-schema="schema1" @submit="ToPayment">
 					<div class="d-flex justify-content-end align-items-center position-relative">
 						<span class="cake_pink position-absolute start-0 top-50">
-							<template v-for="part in parts" :key="'err-' + part.id">
-								<error-message v-if="part.required" :name="'part_' + part.id" class="from__alert"></error-message>
-							</template>
+						<template v-for="part in availableParts" :key="'err-' + part.id">
+							<error-message v-if="part.required" :name="'part_' + part.id" class="from__alert"></error-message>
+						</template>
 						</span>
 						<span class="z-index-1 fs_40 cake_pink text-end mt-5" id="cost">[[ Cost ]]₽</span>
 					</div>
-					<template v-for="part in parts" :key="part.id">
+					<template v-for="part in availableParts" :key="'err-' + part.id">
 						<div v-if="!part.requires_text && part.required"
 							class="d-flex align-items-center flex-wrap mb-3">
 							<span class="me-3 fs_40 cake_blue">[[ part.name ]]</span>
@@ -146,7 +144,7 @@
 						</div>
 					</template>
 					<h1 class="me-3 fs_40 cake_pink mb-3 mt-5">Дополнительно</h1>
-					<template v-for="part in parts" :key="'below-' + part.id">
+					<template v-for="part in availableParts" :key="'below-' + part.id">
 						<div v-if="!part.requires_text && !part.required"
 							class="d-flex align-items-center flex-wrap mb-3">
 							<span class="me-3 fs_40 cake_blue">[[ part.name ]]</span>
@@ -164,7 +162,7 @@
 							</template>
 						</div>
 					</template>
-					<template v-for="part in parts" :key="'txt-' + part.id">
+					<template v-for="part in availableParts" :key="'txt-' + part.id">
 						<div v-if="part.requires_text" class="row mb-3">
 							<div class="col-5 col-md-4 col-lg-3">
 								<label class="me-3 fs_40 cake_blue" for="words">[[ part.name ]]</label>
@@ -192,6 +190,7 @@
 			<section class="row pt-header" id="Payment" v-if="Designed">
 				<form class="d-none" method="post" action="{% url 'orders:create' %}">
 					{% csrf_token %}
+					<input type="hidden" name="base_cake" :value="baseCake ? baseCake.id : ''">
 					<input type="hidden" name="options" :value="SelectedOptions">
 
 					<input v-model="Words" type="text" name="inscription">
@@ -245,7 +244,7 @@
 							</div>
 							<div class="cake__card p-4 position-relative cake_grey">
 								<span class="cake__badge rounded-pill">?</span>
-								<template v-for="part in parts" :key="'summary-' + part.id">
+								<template v-for="part in availableParts" :key="'summary-' + part.id">
 									<span v-if="!part.requires_text">
 										[[ part.name ]]: [[ optionName(part, selected[part.id]) ]]
 									</span>
