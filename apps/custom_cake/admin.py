@@ -16,7 +16,6 @@ class CakePartAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "is_required",
-        "is_multiple",
         "requires_text",
         "order",
     )
