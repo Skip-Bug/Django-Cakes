@@ -10,7 +10,6 @@ DATA = [
         "Уровни",
         {
             "is_required": True,
-            "is_multiple": False,
             "requires_text": False,
             "order": 1,
         },
@@ -24,7 +23,6 @@ DATA = [
         "Форма",
         {
             "is_required": True,
-            "is_multiple": False,
             "requires_text": False,
             "order": 2,
         },
@@ -38,7 +36,6 @@ DATA = [
         "Топпинг",
         {
             "is_required": True,
-            "is_multiple": False,
             "requires_text": False,
             "order": 3,
         },
@@ -88,7 +85,6 @@ DATA = [
         "Надпись",
         {
             "is_required": False,
-            "is_multiple": False,
             "requires_text": True,
             "order": 6,
             "hint": "Разместим любую надпись, например: «С днем рождения!»",

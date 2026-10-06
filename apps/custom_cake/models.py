@@ -6,7 +6,7 @@ class CakePart(models.Model):
     name = models.CharField("Название части", max_length=50)
     hint = models.CharField("Подсказка", max_length=255, blank=True)
     is_required = models.BooleanField("Обязательная часть", default=False)
-    is_multiple = models.BooleanField("Сочетается с другими", default=False)
+
     requires_text = models.BooleanField("Требует текста", default=False)
     order = models.PositiveIntegerField("Порядок в форме", default=0)
 

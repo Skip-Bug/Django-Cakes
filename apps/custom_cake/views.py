@@ -23,7 +23,6 @@ def build_cake_details():
                 "id": part.id,
                 "name": part.name,
                 "required": part.is_required,
-                "multiple": part.is_multiple,
                 "requires_text": part.requires_text,
                 "order": part.order,
                 "hint": part.hint,
