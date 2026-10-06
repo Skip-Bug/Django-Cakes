@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from apps.custom_cake.models import CakePartOption
+from apps.custom_cake.models import CakePart, CakePartOption
 from apps.custom_cake.views import build_cake_details, build_order_prefill
 from apps.orders.forms import OrderForm, PaymentForm
 from apps.orders.models import Order, OrderEvent, PromoCode
@@ -51,15 +51,46 @@ def resolve_options(option_ids):
     return options, missing
 
 
-def missing_required_parts(options):
-    """Возвращает названия обязательных частей, которых нет в выборе."""
-    required = (
-        CakePartOption.objects.filter(part__is_required=True)
-        .values_list("part__name", flat=True)
-        .distinct()
+from collections import Counter
+
+
+def available_parts(base_cake):
+    """Части, доступные для торта. Если ограничений нет — все части."""
+    if base_cake is None:
+        return list(CakePart.objects.all())
+    return list(base_cake.available_parts)
+
+
+def validate_cake_configuration(options, base_cake):
+    """Проверяет конфигурацию торта. Возвращает список ошибок."""
+    errors = []
+    allowed = available_parts(base_cake)
+    allowed_ids = {part.id for part in allowed}
+    allowed_by_id = {part.id: part for part in allowed}
+
+    forbidden = sorted({
+        opt.part.name for opt in options if opt.part_id not in allowed_ids
+    })
+    if forbidden:
+        errors.append("Для этого торта недоступны: " + ", ".join(forbidden))
+        return errors
+
+    counts = Counter(opt.part_id for opt in options)
+    duplicated = sorted(
+        allowed_by_id[pid].name for pid, n in counts.items() if n > 1
     )
-    chosen = {option.part.name for option in options}
-    return sorted({name for name in required} - chosen)
+    if duplicated:
+        errors.append("Можно выбрать только один вариант: " + ", ".join(duplicated))
+
+    chosen = set(counts.keys())
+    missing = sorted(
+        part.name for part in allowed
+        if part.is_required and part.id not in chosen
+    )
+    if missing:
+        errors.append("Не выбрано: " + ", ".join(missing))
+
+    return errors
 
 
 def apply_promo(order, subtotal, code):
@@ -151,8 +182,8 @@ def create_order(request):
         elif not options:
             form.add_error("options", "Выберите комплектацию торта")
         else:
-            for part_name in missing_required_parts(options):
-                form.add_error("options", f"Выберите вариант: {part_name}")
+            for error in validate_cake_configuration(options, base_cake):
+                form.add_error("options", error)
 
     if form.is_valid() and (options or base_cake):
         if base_cake and not options:
