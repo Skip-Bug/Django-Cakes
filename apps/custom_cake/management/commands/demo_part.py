@@ -53,7 +53,6 @@ DATA = [
         "Ягоды",
         {
             "is_required": False,
-            "is_multiple": True,
             "requires_text": False,
             "order": 4,
         },
@@ -68,7 +67,6 @@ DATA = [
         "Декор",
         {
             "is_required": False,
-            "is_multiple": True,
             "requires_text": False,
             "order": 5,
         },
