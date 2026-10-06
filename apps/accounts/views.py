@@ -73,7 +73,10 @@ def verify_code(request):
     otp.is_used = True
     otp.save(update_fields=["is_used"])
 
-    user, created = User.objects.get_or_create(phone=phone, defaults={"email": None},)
+    user, created = User.objects.get_or_create(
+        phone=phone,
+        defaults={"email": None},
+    )
     if created:
         user.set_unusable_password()
         user.save()

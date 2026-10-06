@@ -102,7 +102,7 @@ const app = Vue.createApp({
 
             Words: prefill.inscription || '',
             Comments: prefill.comment || '',
-            Designed: false,
+            Designed: orderErrors.length > 0,
 
             Name: prefill.guest_name || '',
             Phone: prefill.guest_phone || null,
@@ -112,6 +112,14 @@ const app = Vue.createApp({
             Time: prefill.delivery_time || null,
             DelivComments: prefill.delivery_comment || '',
             Promo: prefill.promo || ''
+        }
+    },
+    mounted() {
+        if (this.OrderErrors.length > 0) {
+            this.$nextTick(() => {
+                document.getElementById('Payment')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
         }
     },
     methods: {
