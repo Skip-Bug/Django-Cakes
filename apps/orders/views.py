@@ -2,7 +2,7 @@ from collections import Counter
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -90,10 +90,16 @@ def validate_cake_configuration(options, base_cake):
 
 
 def apply_promo(order, subtotal, code):
-    """Начисляет скидку, если промокод применим. Возвращает текст ошибки."""
+    """Начисляет скидку, если промокод применим. Возвращает текст ошибки.
+
+    Вызывать только внутри transaction.atomic(): строка промокода блокируется
+    через select_for_update, чтобы между проверкой лимита и инкрементом
+    used_count не вклинился другой заказ.
+    """
     if not code:
         return ""
-    promo = PromoCode.objects.filter(code__iexact=code).first()
+
+    promo = PromoCode.objects.select_for_update().filter(code__iexact=code).first()
     if promo is None:
         return "Промокод не найден"
 
@@ -129,20 +135,18 @@ def place_order(form, order):
     Возвращает False, если промокод отклонён: заказ не сохраняется,
     а в форме появляется ошибка поля promo.
     """
-    promo_error = apply_promo(order, order.subtotal, form.get_promo())
-    if promo_error:
-        form.add_error("promo", promo_error)
-        return False
-
-    order.total -= order.promo_discount
-
     with transaction.atomic():
+        promo_error = apply_promo(order, order.subtotal, form.get_promo())
+        if promo_error:
+            form.add_error("promo", promo_error)
+            return False
+
+        order.total -= order.promo_discount
         order.save()
 
-        promo = order.promo
-        if promo:
-            PromoCode.objects.filter(pk=promo.pk).update(
-                used_count=promo.used_count + 1
+        if order.promo:
+            PromoCode.objects.filter(pk=order.promo.pk).update(
+                used_count=F("used_count") + 1
             )
 
         OrderEvent.objects.create(
