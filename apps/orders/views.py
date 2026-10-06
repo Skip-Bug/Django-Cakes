@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
@@ -51,9 +53,6 @@ def resolve_options(option_ids):
     return options, missing
 
 
-from collections import Counter
-
-
 def available_parts(base_cake):
     """Части, доступные для торта. Если ограничений нет — все части."""
     if base_cake is None:
@@ -68,24 +67,21 @@ def validate_cake_configuration(options, base_cake):
     allowed_ids = {part.id for part in allowed}
     allowed_by_id = {part.id: part for part in allowed}
 
-    forbidden = sorted({
-        opt.part.name for opt in options if opt.part_id not in allowed_ids
-    })
+    forbidden = sorted(
+        {opt.part.name for opt in options if opt.part_id not in allowed_ids}
+    )
     if forbidden:
         errors.append("Для этого торта недоступны: " + ", ".join(forbidden))
         return errors
 
     counts = Counter(opt.part_id for opt in options)
-    duplicated = sorted(
-        allowed_by_id[pid].name for pid, n in counts.items() if n > 1
-    )
+    duplicated = sorted(allowed_by_id[pid].name for pid, n in counts.items() if n > 1)
     if duplicated:
         errors.append("Можно выбрать только один вариант: " + ", ".join(duplicated))
 
     chosen = set(counts.keys())
     missing = sorted(
-        part.name for part in allowed
-        if part.is_required and part.id not in chosen
+        part.name for part in allowed if part.is_required and part.id not in chosen
     )
     if missing:
         errors.append("Не выбрано: " + ", ".join(missing))
