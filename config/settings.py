@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from pathlib import Path
 
@@ -20,6 +21,10 @@ OTP_DEMO_MODE = env.bool("OTP_DEMO_MODE", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
+INTERNAL_IPS = ["127.0.0.1"]
+
+
+mimetypes.add_type("application/javascript", ".js", True)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -33,10 +38,12 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.orders",
     "apps.ready_cake",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
