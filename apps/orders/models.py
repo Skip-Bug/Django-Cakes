@@ -161,7 +161,12 @@ class Order(models.Model):
         (PAYMENT_METHOD_CASH, "Наличными ..."),
     ]
 
-    number = models.CharField("Номер", max_length=20, unique=True)
+    number = models.CharField(
+        "Номер",
+        max_length=20,
+        default=make_order_number,
+        unique=True,
+    )
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="Клиент",
@@ -193,7 +198,11 @@ class Order(models.Model):
         default=PAYMENT_METHOD_CARD,
     )
     payment_token = models.CharField(
-        "Токен оплаты", max_length=32, blank=True, default="", db_index=True
+        "Токен оплаты",
+        max_length=32,
+        blank=True,
+        default=make_payment_token,
+        db_index=True,
     )
 
     # --- конфигурация торта (снимок) ---
@@ -249,13 +258,6 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.number} ({self.guest_phone})"
-
-    def save(self, *args, **kwargs):
-        if not self.number:
-            self.number = make_order_number()
-        if not self.payment_token:
-            self.payment_token = make_payment_token()
-        super().save(*args, **kwargs)
 
     # --- вычисляемое ---
 
